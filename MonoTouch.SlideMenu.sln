@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoTouch.SlideMenu.Demo", "MonoTouch.SlideMenu.Demo\MonoTouch.SlideMenu.Demo.csproj", "{B291749C-681D-40A0-91DB-BB7CF8095D1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoTouch.SlideMenu", "MonoTouch.SlideMenu\MonoTouch.SlideMenu.csproj", "{0A371CF4-E266-4A77-A319-603543C8A5E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+		Release|iPhone = Release|iPhone
+		Ad-Hoc|iPhone = Ad-Hoc|iPhone
+		AppStore|iPhone = AppStore|iPhone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Release|iPhone.Build.0 = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{0A371CF4-E266-4A77-A319-603543C8A5E1}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.AppStore|iPhone.ActiveCfg = AppStore|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.AppStore|iPhone.Build.0 = AppStore|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Debug|iPhone.Build.0 = Debug|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Release|iPhone.ActiveCfg = Release|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Release|iPhone.Build.0 = Release|iPhone
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{B291749C-681D-40A0-91DB-BB7CF8095D1D}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = MonoTouch.SlideMenu.Demo\MonoTouch.SlideMenu.Demo.csproj
+	EndGlobalSection
+EndGlobal
