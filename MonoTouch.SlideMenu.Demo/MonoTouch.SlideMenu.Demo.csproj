@@ -95,6 +95,21 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
+    <Compile Include="DetailsViewController.cs" />
+    <Compile Include="DetailsViewController.designer.cs">
+      <DependentUpon>DetailsViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MenuViewController.cs" />
+    <Compile Include="MenuViewControllerTableViewSource.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <InterfaceDefinition Include="DetailsViewController.xib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MonoTouch.SlideMenu\MonoTouch.SlideMenu.csproj">
+      <Project>{0A371CF4-E266-4A77-A319-603543C8A5E1}</Project>
+      <Name>MonoTouch.SlideMenu</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

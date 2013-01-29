@@ -40,4 +40,8 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="SlideMenuController.cs" />
+    <Compile Include="Extensions.cs" />
+  </ItemGroup>
 </Project>
