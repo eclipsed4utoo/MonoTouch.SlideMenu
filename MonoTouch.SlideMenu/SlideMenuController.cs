@@ -375,6 +375,7 @@ namespace MonoTouch.SlideMenu
 
 				if (!menuWasOpenAtPanBegin) {
 					LoadMenuViewControllerViewIfNeeded (); // Menu is closed, load it if needed
+					contentViewController.View.EndEditing(true); // Dismiss any open keyboards.
 					menuViewController.BeginAppearanceTransition (true, true); // Menu is appearing
 				}
 			}
