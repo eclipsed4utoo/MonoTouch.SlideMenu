@@ -7,7 +7,7 @@ namespace MonoTouch.SlideMenu
 {
 	public class SlideMenuController : UIViewController
 	{
-		const float WIDTH_OF_CONTENT_VIEW_VISIBLE = 44.0f;
+		private float _widthOfContentViewVisible = 44.0f;
 		const float ANIMATION_DURATION = 0.3f;
 
 		UIViewController menuViewController;
@@ -18,6 +18,56 @@ namespace MonoTouch.SlideMenu
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
 		bool panEnabledWhenSlideMenuIsHidden;
+
+		public event EventHandler LeftBarButtonClicked;
+		private void OnLeftBarButtonClicked()
+		{
+			if (LeftBarButtonClicked != null)
+			{
+				LeftBarButtonClicked (this, EventArgs.Empty);
+			}
+		}
+
+		public event EventHandler RightBarButtonClicked;
+		private void OnRightBarButtonClicked()
+		{
+			if (RightBarButtonClicked != null)
+			{
+				RightBarButtonClicked (this, EventArgs.Empty);
+			}
+		}
+
+		public UIBarButtonItem SlideControllerLeftBarButton
+		{
+			get
+			{
+				UIBarButtonItem item = null;
+				if (contentViewController != null)
+				{
+					item = this.NavigationItem.LeftBarButtonItem;
+				}
+				return item;
+			}
+		}
+
+		public UIBarButtonItem SlideControllerRightBarButton
+		{
+			get
+			{
+				UIBarButtonItem item = null;
+				if (contentViewController != null)
+				{
+					item = this.NavigationItem.LeftBarButtonItem;
+				}
+				return item;
+			}
+		}
+
+		public float WidthofContentViewVisible
+		{
+			get { return _widthOfContentViewVisible; }
+			set { _widthOfContentViewVisible = value; }
+		}
 
 		public SlideMenuController (UIViewController menuViewController, UIViewController contentViewController)
 		{
@@ -41,6 +91,44 @@ namespace MonoTouch.SlideMenu
 			}
 
 			base.Dispose (disposing);
+		}
+
+		public void SetLeftBarButtonForController(UIBarButtonItem item)
+		{
+			if (this.NavigationItem.LeftBarButtonItem != null)
+			{
+				this.NavigationItem.LeftBarButtonItem.Clicked -= HandleLeftBarButtonClicked;
+				this.NavigationItem.LeftBarButtonItem.Dispose ();
+				this.NavigationItem.LeftBarButtonItem = null;
+			}
+
+			contentViewController.NavigationItem.LeftBarButtonItem = item;
+			this.NavigationItem.LeftBarButtonItem = item;
+			this.NavigationItem.LeftBarButtonItem.Clicked += HandleLeftBarButtonClicked;
+		}
+
+		public void SetRightBarButtonForController(UIBarButtonItem item)
+		{
+			if (this.NavigationItem.RightBarButtonItem != null)
+			{
+				this.NavigationItem.RightBarButtonItem.Clicked -= HandleRightBarButtonClicked;
+				this.NavigationItem.RightBarButtonItem.Dispose ();
+				this.NavigationItem.RightBarButtonItem = null;
+			}
+
+			contentViewController.NavigationItem.RightBarButtonItem = item;
+			this.NavigationItem.RightBarButtonItem = item;
+			this.NavigationItem.RightBarButtonItem.Clicked += HandleRightBarButtonClicked;
+		}
+
+		private void HandleLeftBarButtonClicked (object sender, EventArgs e)
+		{
+			OnLeftBarButtonClicked ();
+		}
+
+		private void HandleRightBarButtonClicked (object sender, EventArgs e)
+		{
+			OnRightBarButtonClicked ();
 		}
 
 		// - (void)setMenuViewController:(UIViewController *)menuViewController
@@ -91,7 +179,6 @@ namespace MonoTouch.SlideMenu
 		}
 
 		// #pragma mark - View lifecycle
-
 
 		// - (void)viewDidLoad
 		public override void ViewDidLoad ()
@@ -225,7 +312,7 @@ namespace MonoTouch.SlideMenu
 		{
 			if (menuViewController.View.Superview == null) {
 				RectangleF menuFrame = View.Bounds;
-				menuFrame.Width -= WIDTH_OF_CONTENT_VIEW_VISIBLE; 
+				menuFrame.Width -= _widthOfContentViewVisible; 
 				menuViewController.View.Frame = menuFrame;
 				View.InsertSubview(menuViewController.View, 0);
 			}
@@ -462,7 +549,7 @@ namespace MonoTouch.SlideMenu
 		// - (CGFloat)offsetXWhenMenuIsOpen
 		public float OffsetXWhenMenuIsOpen ()
 		{
-			return View.Bounds.Width - WIDTH_OF_CONTENT_VIEW_VISIBLE;
+			return View.Bounds.Width - _widthOfContentViewVisible;
 		}
 
 	}

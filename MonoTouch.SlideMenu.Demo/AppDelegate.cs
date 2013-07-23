@@ -1,6 +1,7 @@
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using System;
 
 namespace MonoTouch.SlideMenu.Demo
 {
@@ -8,6 +9,7 @@ namespace MonoTouch.SlideMenu.Demo
 	public partial class AppDelegate : UIApplicationDelegate
 	{
 		UIWindow window;
+		SlideMenuController _slideController;
 
 		public override bool FinishedLaunching (UIApplication app, NSDictionary options)
 		{
@@ -18,11 +20,21 @@ namespace MonoTouch.SlideMenu.Demo
 
 			SlideMenuController slideMenuViewController = new SlideMenuController(menuViewController, detailsViewController);
 
-			window.RootViewController = slideMenuViewController;
+			slideMenuViewController.SetLeftBarButtonForContentView (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
+			slideMenuViewController.LeftBarButtonClicked += HandleLeftBarButtonClicked;
+
+			_slideController = slideMenuViewController;
+			UINavigationController cont = new UINavigationController (slideMenuViewController);
+			window.RootViewController = cont;
 
 			window.BackgroundColor = UIColor.White;
 			window.MakeKeyAndVisible ();			
 			return true;
+		}
+
+		private void HandleLeftBarButtonClicked(object sender, EventArgs e)
+		{
+			_slideController.ToggleMenuAnimated ();
 		}
 	}
 }
