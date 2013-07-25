@@ -17,8 +17,7 @@ namespace MonoTouch.SlideMenu.Demo
 			MenuViewController menuViewController = new MenuViewController(UITableViewStyle.Grouped);
 			DetailsViewController detailsViewController = new DetailsViewController();
 
-			SlideMenuController slideMenuViewController = new SlideMenuController(menuViewController, detailsViewController);
-			slideMenuViewController.SetRightMenuViewController (new MenuViewController(UITableViewStyle.Grouped));
+			SlideMenuController slideMenuViewController = new SlideMenuController(menuViewController, new MenuViewController(UITableViewStyle.Plain), detailsViewController);
 
 			slideMenuViewController.SetLeftBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
 			slideMenuViewController.SetRightBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));

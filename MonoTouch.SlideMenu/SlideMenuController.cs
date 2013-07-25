@@ -153,6 +153,9 @@ namespace MonoTouch.SlideMenu
 
 		private void HandleLeftBarButtonClicked (object sender, EventArgs e)
 		{
+			if (leftMenuViewController == null)
+				return;
+
 			leftBarButtonClicked = true;
 			rightBarButtonClicked = false;
 			ToggleLeftMenuAnimated();
@@ -161,6 +164,9 @@ namespace MonoTouch.SlideMenu
 
 		private void HandleRightBarButtonClicked (object sender, EventArgs e)
 		{
+			if (rightMenuViewController == null)
+				return;
+
 			rightBarButtonClicked = true;
 			leftBarButtonClicked = false;
 			ToggleRightMenuAnimated();
@@ -342,24 +348,73 @@ namespace MonoTouch.SlideMenu
 		// - (BOOL)shouldAutorotate
 		public override bool ShouldAutorotate ()
 		{
-			return leftMenuViewController.ShouldAutorotate() && rightMenuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
+			if (leftMenuViewController != null && rightMenuViewController != null)
+			{
+				return leftMenuViewController.ShouldAutorotate() && rightMenuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
+			}
+			else if (leftMenuViewController != null && rightMenuViewController == null)
+			{
+				return leftMenuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
+			}
+			else if (leftMenuViewController == null && rightMenuViewController != null)
+			{
+				return rightMenuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
+			}
+			else
+			{
+				return contentViewController.ShouldAutorotate ();
+			}
 		}
 
 		// - (NSUInteger)supportedInterfaceOrientations
 		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
 		{
-			return (leftMenuViewController.GetSupportedInterfaceOrientations()) & 
-				(rightMenuViewController.GetSupportedInterfaceOrientations()) &
-				contentViewController.GetSupportedInterfaceOrientations();
+			if (leftMenuViewController != null && rightMenuViewController != null)
+			{
+				return (leftMenuViewController.GetSupportedInterfaceOrientations()) & 
+					(rightMenuViewController.GetSupportedInterfaceOrientations()) &
+						contentViewController.GetSupportedInterfaceOrientations();
+			}
+			else if (leftMenuViewController != null && rightMenuViewController == null)
+			{
+				return (leftMenuViewController.GetSupportedInterfaceOrientations()) & 
+						contentViewController.GetSupportedInterfaceOrientations();
+			}
+			else if (leftMenuViewController == null && rightMenuViewController != null)
+			{
+				return (rightMenuViewController.GetSupportedInterfaceOrientations()) &
+						contentViewController.GetSupportedInterfaceOrientations();
+			}
+			else
+			{
+				return contentViewController.GetSupportedInterfaceOrientations ();
+			}
 		}
 
 		// - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 		[Obsolete]
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
-			return (leftMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) && 
-				(rightMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) &&
-				contentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+			if (leftMenuViewController != null && rightMenuViewController != null)
+			{
+				return (leftMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) && 
+					(rightMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) &&
+						contentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+			}
+			else if (leftMenuViewController != null && rightMenuViewController == null)
+			{
+				return (leftMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) && 
+						contentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+			}
+			else if (leftMenuViewController == null && rightMenuViewController != null)
+			{
+				return (rightMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) &&
+						contentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+			}
+			else
+			{
+				return contentViewController.ShouldAutorotateToInterfaceOrientation (toInterfaceOrientation);
+			}
 		}
 
 		// - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
@@ -676,6 +731,12 @@ namespace MonoTouch.SlideMenu
 
 		void PanGestureTriggered ()
 		{
+			if (IsPanningLeft () && !IsRightMenuOpen() && !CanOpenLeftMenu ())
+				return;
+
+			if (IsPanningRight () && !IsLeftMenuOpen() && !CanOpenRightMenu ())
+				return;
+
 			if (PanGesture.State == UIGestureRecognizerState.Began) {
 				contentViewControllerFrame = contentViewController.View.Frame;
 				leftMenuWasOpenAtPanBegin = IsLeftMenuOpen ();
@@ -896,6 +957,16 @@ namespace MonoTouch.SlideMenu
 				return false;
 
 			return contentViewController.View.Frame.X < 0;
+		}
+
+		public bool CanOpenLeftMenu()
+		{
+			return leftMenuViewController != null;
+		}
+
+		public bool CanOpenRightMenu()
+		{
+			return rightMenuViewController != null;
 		}
 
 		// - (CGFloat)offsetXWhenMenuIsOpen
