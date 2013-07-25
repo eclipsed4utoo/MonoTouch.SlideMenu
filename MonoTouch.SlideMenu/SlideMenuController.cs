@@ -10,11 +10,16 @@ namespace MonoTouch.SlideMenu
 		private float _widthOfContentViewVisible = 44.0f;
 		const float ANIMATION_DURATION = 0.3f;
 
-		UIViewController menuViewController;
+		UIViewController leftMenuViewController;
+		UIViewController rightMenuViewController;
+
 		UIViewController contentViewController;
 
 		RectangleF contentViewControllerFrame;
-		bool menuWasOpenAtPanBegin;
+		bool leftMenuWasOpenAtPanBegin;
+		bool rightMenuWasOpenAtPanBegin;
+		bool leftBarButtonClicked = false;
+		bool rightBarButtonClicked = false;
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
 		bool panEnabledWhenSlideMenuIsHidden;
@@ -69,25 +74,44 @@ namespace MonoTouch.SlideMenu
 			set { _widthOfContentViewVisible = value; }
 		}
 
-		public SlideMenuController (UIViewController menuViewController, UIViewController contentViewController)
+		public SlideMenuController (UIViewController leftMenuViewController, UIViewController contentViewController)
 		{
-			//this.menuViewController = menuViewController;
-			//this.contentViewController = contentViewController;
-
-			this.SetMenuViewController(menuViewController);
+			this.SetLeftMenuViewController(leftMenuViewController);
 			this.SetContentViewController(contentViewController);
 
 			panEnabledWhenSlideMenuIsHidden = true;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MonoTouch.SlideMenu.SlideMenuController"/> class.
+		/// </summary>
+		/// <param name="leftMenuViewController">Left menu view controller. If no left menu, use null.</param>
+		/// <param name="rightMenuViewController">Right menu view controller. If no right menu, use null.</param>
+		/// <param name="contentViewController">Content view controller.</param>
+		public SlideMenuController (UIViewController leftMenuViewController, UIViewController rightMenuViewController, UIViewController contentViewController)
+			: this(leftMenuViewController, contentViewController)
+		{
+			this.SetRightMenuViewController (rightMenuViewController);
+		}
+
 		protected override void Dispose (bool disposing)
 		{
 			if (disposing) {
-				menuViewController.Dispose();
-				menuViewController = null;
-				
-				contentViewController.Dispose();
-				contentViewController = null;
+
+				if (leftMenuViewController != null) {
+					leftMenuViewController.Dispose();
+					leftMenuViewController = null;
+				}
+
+				if (rightMenuViewController != null) {
+					rightMenuViewController.Dispose ();
+					rightMenuViewController = null;
+				}
+
+				if (contentViewController != null) {
+					contentViewController.Dispose();
+					contentViewController = null;
+				}
 			}
 
 			base.Dispose (disposing);
@@ -95,6 +119,9 @@ namespace MonoTouch.SlideMenu
 
 		public void SetLeftBarButtonForController(UIBarButtonItem item)
 		{
+			if (item == null)
+				throw new ArgumentNullException ("item cannot be null");
+
 			if (this.NavigationItem.LeftBarButtonItem != null)
 			{
 				this.NavigationItem.LeftBarButtonItem.Clicked -= HandleLeftBarButtonClicked;
@@ -109,6 +136,9 @@ namespace MonoTouch.SlideMenu
 
 		public void SetRightBarButtonForController(UIBarButtonItem item)
 		{
+			if (item == null)
+				throw new ArgumentNullException ("item cannot be null");
+
 			if (this.NavigationItem.RightBarButtonItem != null)
 			{
 				this.NavigationItem.RightBarButtonItem.Clicked -= HandleRightBarButtonClicked;
@@ -123,29 +153,52 @@ namespace MonoTouch.SlideMenu
 
 		private void HandleLeftBarButtonClicked (object sender, EventArgs e)
 		{
+			leftBarButtonClicked = true;
+			rightBarButtonClicked = false;
+			ToggleLeftMenuAnimated();
 			OnLeftBarButtonClicked ();
 		}
 
 		private void HandleRightBarButtonClicked (object sender, EventArgs e)
 		{
+			rightBarButtonClicked = true;
+			leftBarButtonClicked = false;
+			ToggleRightMenuAnimated();
 			OnRightBarButtonClicked ();
 		}
 
-		// - (void)setMenuViewController:(UIViewController *)menuViewController
-		public void SetMenuViewController (UIViewController controller)
+		// - (void)setleftMenuViewController:(UIViewController *)leftMenuViewController
+		public void SetLeftMenuViewController (UIViewController controller)
 		{
-			if (menuViewController != controller) {
+			if (leftMenuViewController != controller) {
 
-				if (menuViewController != null) {
-					menuViewController.WillMoveToParentViewController (null);
-					menuViewController.RemoveFromParentViewController ();
-					menuViewController.Dispose ();
+				if (leftMenuViewController != null) {
+					leftMenuViewController.WillMoveToParentViewController (null);
+					leftMenuViewController.RemoveFromParentViewController ();
+					leftMenuViewController.Dispose ();
 				}
 
-				menuViewController = controller;
-				AddChildViewController (menuViewController);
-				menuViewController.DidMoveToParentViewController (this);
+				leftMenuViewController = controller;
+				AddChildViewController (leftMenuViewController);
+				leftMenuViewController.DidMoveToParentViewController (this);
 			}
+		}
+
+		public void SetRightMenuViewController(UIViewController controller)
+		{
+			if (rightMenuViewController != controller) {
+
+				if (rightMenuViewController != null) {
+					rightMenuViewController.WillMoveToParentViewController (null);
+					rightMenuViewController.RemoveFromParentViewController ();
+					rightMenuViewController.Dispose ();
+				}
+
+				rightMenuViewController = controller;
+				AddChildViewController (rightMenuViewController);
+				rightMenuViewController.DidMoveToParentViewController (this);
+			}
+
 		}
 
 		// - (void)setContentViewController:(UIViewController *)contentViewController
@@ -200,13 +253,17 @@ namespace MonoTouch.SlideMenu
 		{
 			base.ViewWillAppear (animated);
 
-			if (!IsMenuOpen ()) {
+			if (!IsLeftMenuOpen () && !IsRightMenuOpen()) {
 				contentViewController.View.Frame = View.Bounds;
 			}
 
 			contentViewController.BeginAppearanceTransition (true, animated);
-			if (menuViewController.IsViewLoaded && menuViewController.View.Superview != null) {
-				menuViewController.BeginAppearanceTransition (true, animated);
+			if (leftMenuViewController != null && leftMenuViewController.IsViewLoaded && leftMenuViewController.View.Superview != null) {
+				leftMenuViewController.BeginAppearanceTransition (true, animated);
+			}
+
+			if (rightMenuViewController != null && rightMenuViewController.IsViewLoaded && rightMenuViewController.View.Superview != null) {
+				rightMenuViewController.BeginAppearanceTransition (true, animated);
 			}
 		}
 
@@ -216,8 +273,12 @@ namespace MonoTouch.SlideMenu
 			base.ViewDidAppear (animated);
 
 			contentViewController.EndAppearanceTransition();
-			if (menuViewController.IsViewLoaded && menuViewController.View.Superview != null) {
-				menuViewController.EndAppearanceTransition();
+			if (leftMenuViewController != null && leftMenuViewController.IsViewLoaded && leftMenuViewController.View.Superview != null) {
+				leftMenuViewController.EndAppearanceTransition();
+			}
+
+			if (rightMenuViewController != null && rightMenuViewController.IsViewLoaded && rightMenuViewController.View.Superview != null) {
+				rightMenuViewController.EndAppearanceTransition();
 			}
 		}
 
@@ -227,8 +288,12 @@ namespace MonoTouch.SlideMenu
 			base.ViewWillDisappear (animated);
 
 			contentViewController.BeginAppearanceTransition (false, animated);
-			if (menuViewController.IsViewLoaded) {
-				menuViewController.BeginAppearanceTransition(false, animated);
+			if (leftMenuViewController != null && leftMenuViewController.IsViewLoaded) {
+				leftMenuViewController.BeginAppearanceTransition(false, animated);
+			}
+
+			if (rightMenuViewController != null && rightMenuViewController.IsViewLoaded) {
+				rightMenuViewController.BeginAppearanceTransition(false, animated);
 			}
 		}
 
@@ -238,8 +303,12 @@ namespace MonoTouch.SlideMenu
 			base.ViewDidDisappear (animated);
 
 			contentViewController.EndAppearanceTransition ();
-			if (menuViewController.IsViewLoaded) {
-				menuViewController.EndAppearanceTransition();
+			if (leftMenuViewController != null && leftMenuViewController.IsViewLoaded) {
+				leftMenuViewController.EndAppearanceTransition();
+			}
+
+			if (rightMenuViewController != null && rightMenuViewController.IsViewLoaded) {
+				rightMenuViewController.EndAppearanceTransition();
 			}
 		}
 
@@ -273,13 +342,14 @@ namespace MonoTouch.SlideMenu
 		// - (BOOL)shouldAutorotate
 		public override bool ShouldAutorotate ()
 		{
-			return menuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
+			return leftMenuViewController.ShouldAutorotate() && rightMenuViewController.ShouldAutorotate() && contentViewController.ShouldAutorotate();
 		}
 
 		// - (NSUInteger)supportedInterfaceOrientations
 		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
 		{
-			return menuViewController.GetSupportedInterfaceOrientations() & 
+			return (leftMenuViewController.GetSupportedInterfaceOrientations()) & 
+				(rightMenuViewController.GetSupportedInterfaceOrientations()) &
 				contentViewController.GetSupportedInterfaceOrientations();
 		}
 
@@ -287,14 +357,15 @@ namespace MonoTouch.SlideMenu
 		[Obsolete]
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
-			return menuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation) && 
+			return (leftMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) && 
+				(rightMenuViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation)) &&
 				contentViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
 		}
 
 		// - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 		public override void WillAnimateRotation (UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (IsMenuOpen ()) {
+			if (IsLeftMenuOpen () || IsRightMenuOpen()) {
 				RectangleF frame = contentViewController.View.Frame;
 				frame.X = OffsetXWhenMenuIsOpen();
 				UIView.Animate(duration, () => {
@@ -307,14 +378,25 @@ namespace MonoTouch.SlideMenu
 		// #pragma mark - Menu view lazy load
 
 
-		// - (void)loadMenuViewControllerViewIfNeeded
-		public void LoadMenuViewControllerViewIfNeeded ()
+		// - (void)loadleftMenuViewControllerViewIfNeeded
+		public void LoadLeftMenuViewControllerViewIfNeeded ()
 		{
-			if (menuViewController.View.Superview == null) {
+			if (leftMenuViewController != null && leftMenuViewController.View.Superview == null) {
 				RectangleF menuFrame = View.Bounds;
 				menuFrame.Width -= _widthOfContentViewVisible; 
-				menuViewController.View.Frame = menuFrame;
-				View.InsertSubview(menuViewController.View, 0);
+				leftMenuViewController.View.Frame = menuFrame;
+				View.InsertSubview (leftMenuViewController.View, 0);
+			}
+		}
+
+		public void LoadRightMenuViewControllerViewIfNeeded()
+		{
+			if (rightMenuViewController != null && rightMenuViewController.View.Superview == null) {
+				RectangleF menuFrame = View.Bounds;
+				menuFrame.Width -= _widthOfContentViewVisible;
+				menuFrame.X += _widthOfContentViewVisible;
+				rightMenuViewController.View.Frame = menuFrame;
+				View.InsertSubview (rightMenuViewController.View, 0);
 			}
 		}
 
@@ -363,7 +445,13 @@ namespace MonoTouch.SlideMenu
 			TapGesture.Enabled = false;
 			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
 
-			menuViewController.View.UserInteractionEnabled = false;
+			if (IsLeftMenuOpen()) {
+				leftMenuViewController.View.UserInteractionEnabled = false;
+			}
+
+			if (IsRightMenuOpen()) {
+				rightMenuViewController.View.UserInteractionEnabled = false;
+			}
 
 			var duration = animated ? ANIMATION_DURATION : 0;
 
@@ -371,13 +459,27 @@ namespace MonoTouch.SlideMenu
 			RectangleF contentViewFrame = contentView.Frame;
 			contentViewFrame.X = 0;
 
-			menuViewController.BeginAppearanceTransition(false, animated);
+			if (IsLeftMenuOpen()) {
+				leftMenuViewController.BeginAppearanceTransition (false, animated);
+			}
+
+			if (IsRightMenuOpen()) {
+				rightMenuViewController.BeginAppearanceTransition (false, animated);
+			}
 
 			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentView.Frame = contentViewFrame;
 			}, (finished) => {
-				menuViewController.EndAppearanceTransition ();
-				menuViewController.View.UserInteractionEnabled = true;
+
+				if (leftMenuViewController != null) {
+					leftMenuViewController.EndAppearanceTransition ();
+					leftMenuViewController.View.UserInteractionEnabled = true;
+				}
+
+				if (rightMenuViewController != null) {
+					rightMenuViewController.EndAppearanceTransition();
+					rightMenuViewController.View.UserInteractionEnabled = true;
+				}
 
 				if (completion != null) {
 					completion (finished);
@@ -386,35 +488,128 @@ namespace MonoTouch.SlideMenu
 		}
 
 		// - (IBAction)toggleMenuAnimated:(id)sender;
-		public void ToggleMenuAnimated ()
+		public void ToggleLeftMenuAnimated()
 		{
-			if (IsMenuOpen ()) {
-				ShowContentViewControllerAnimated(true, null);
+			if (IsRightMenuOpen())
+			{
+				ShowContentViewControllerAnimated (true, (finished) => {
+
+					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
+						leftMenuViewController.View.Hidden = false;
+
+					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
+						rightMenuViewController.View.Hidden = false;
+
+				});
+				return;
+			}
+
+			if (IsLeftMenuOpen()){
+				ShowContentViewControllerAnimated (true, (finished) => {
+
+					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
+						leftMenuViewController.View.Hidden = false;
+
+					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
+						rightMenuViewController.View.Hidden = false;
+
+				});
 			} else {
-				ShowMenuAnimated(true, null);
+
+				if (rightMenuViewController != null)
+					rightMenuViewController.View.Hidden = true;
+
+				ShowLeftMenuAnimated (true, null);
+			}
+		}
+
+		public void ToggleRightMenuAnimated()
+		{
+			if (IsLeftMenuOpen())
+			{
+				ShowContentViewControllerAnimated (true, (finished) => {
+
+					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
+						leftMenuViewController.View.Hidden = false;
+
+					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
+						rightMenuViewController.View.Hidden = false;
+
+				});
+				return;
+			}
+
+			if (IsRightMenuOpen()){
+				ShowContentViewControllerAnimated (true, (finished) => {
+
+					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
+						leftMenuViewController.View.Hidden = false;
+
+					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
+						rightMenuViewController.View.Hidden = false;
+
+				});
+			} else {
+
+				if (leftMenuViewController != null)
+					leftMenuViewController.View.Hidden = true;
+
+				ShowRightMenuAnimated (true, null);
 			}
 		}
 
 		// - (void)showMenuAnimated:(BOOL)animated completion:(void(^)(BOOL finished))completion;
-		public void ShowMenuAnimated (bool animated, UICompletionHandler completion)
+
+		public void ShowLeftMenuAnimated(bool animated, UICompletionHandler completion)
 		{
+			if (leftMenuViewController == null)
+				return;
+
 			var duration = animated ? ANIMATION_DURATION : 0;
 
 			UIView contentView = contentViewController.View;
 			RectangleF contentViewFrame = contentView.Frame;
 			contentViewFrame.X = OffsetXWhenMenuIsOpen();
 
-			LoadMenuViewControllerViewIfNeeded();
-			menuViewController.BeginAppearanceTransition(true, true);
+			LoadLeftMenuViewControllerViewIfNeeded();
+			leftMenuViewController.BeginAppearanceTransition(true, true);
 
 			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentView.Frame = contentViewFrame;
 			}, (finished) => {
-				menuViewController.EndAppearanceTransition ();
+				leftMenuViewController.EndAppearanceTransition ();
 
 				TapGesture.Enabled = true;
 				PanGesture.Enabled = true;
-				
+
+				if (completion != null) {
+					completion (finished);
+				}
+			});
+		}
+
+		public void ShowRightMenuAnimated(bool animated, UICompletionHandler completion)
+		{
+			if (rightMenuViewController == null)
+				return;
+
+			var duration = animated ? ANIMATION_DURATION : 0;
+
+			UIView contentView = contentViewController.View;
+			RectangleF contentViewFrame = contentView.Frame;
+			contentViewFrame.X = OffsetXWhenMenuIsOpen ();
+
+			LoadRightMenuViewControllerViewIfNeeded();
+			rightMenuViewController.BeginAppearanceTransition(true, true);
+
+			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
+				contentView.Frame = contentViewFrame;
+			}, (finished) => {
+				rightMenuViewController.EndAppearanceTransition ();
+
+				TapGesture.Enabled = true;
+				PanGesture.Enabled = true;
+
 				if (completion != null) {
 					completion (finished);
 				}
@@ -438,7 +633,15 @@ namespace MonoTouch.SlideMenu
 		void TapGestureTriggered()
 		{
 			if (TapGesture.State == UIGestureRecognizerState.Ended) {
-				ShowContentViewControllerAnimated (true, null);
+				ShowContentViewControllerAnimated (true, (finished) => {
+
+					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
+						leftMenuViewController.View.Hidden = false;
+
+					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
+						rightMenuViewController.View.Hidden = false;
+
+				});
 			}
 		}
 
@@ -454,102 +657,267 @@ namespace MonoTouch.SlideMenu
 			}
 		}
 
+		private float VelocityX
+		{
+			get { return PanGesture.VelocityInView (PanGesture.View).X; }
+		}
+
+		private bool IsPanningLeft()
+		{
+			PointF velocity = PanGesture.VelocityInView (PanGesture.View);
+			return velocity.X > 0;
+		}
+
+		private bool IsPanningRight()
+		{
+			PointF velocity = PanGesture.VelocityInView (PanGesture.View);
+			return velocity.X < 0;
+		}
+
 		void PanGestureTriggered ()
 		{
 			if (PanGesture.State == UIGestureRecognizerState.Began) {
 				contentViewControllerFrame = contentViewController.View.Frame;
-				menuWasOpenAtPanBegin = IsMenuOpen ();
+				leftMenuWasOpenAtPanBegin = IsLeftMenuOpen ();
+				rightMenuWasOpenAtPanBegin = IsRightMenuOpen ();
 
-				if (!menuWasOpenAtPanBegin) {
-					LoadMenuViewControllerViewIfNeeded (); // Menu is closed, load it if needed
+				if (!leftMenuWasOpenAtPanBegin && IsPanningLeft() && !rightMenuWasOpenAtPanBegin && leftMenuViewController != null) {
+					LoadLeftMenuViewControllerViewIfNeeded (); // Menu is closed, load it if needed
 					contentViewController.View.EndEditing(true); // Dismiss any open keyboards.
-					menuViewController.BeginAppearanceTransition (true, true); // Menu is appearing
+					leftMenuViewController.BeginAppearanceTransition (true, true); // Menu is appearing
+				}
+
+				if (!rightMenuWasOpenAtPanBegin && IsPanningRight() && !leftMenuWasOpenAtPanBegin && rightMenuViewController != null) 
+				{
+					LoadRightMenuViewControllerViewIfNeeded ();
+					contentViewController.View.EndEditing (true);
+					rightMenuViewController.BeginAppearanceTransition (true, true);
+				}
+
+				if (IsPanningLeft() && !IsRightMenuOpen() && rightMenuViewController != null && rightMenuViewController.View.Superview != null)
+				{
+					rightMenuViewController.View.Hidden = true;
+				} 
+				else if (IsPanningRight() && !IsLeftMenuOpen() && leftMenuViewController != null && leftMenuViewController.View.Superview != null)
+				{
+					leftMenuViewController.View.Hidden = true;
 				}
 			}
 
 			PointF translation = PanGesture.TranslationInView (PanGesture.View);
 
 			RectangleF frame = contentViewControllerFrame;
+
 			frame.X += translation.X;
 
 			float offsetXWhenMenuIsOpen = OffsetXWhenMenuIsOpen ();
 
-			if (frame.X < 0) {
-				frame.X = 0;
-			} else if (frame.X > offsetXWhenMenuIsOpen) {
-				frame.X = offsetXWhenMenuIsOpen;
+			if (IsPanningLeft() && !rightMenuWasOpenAtPanBegin)
+			{
+				if (frame.X < 0) {
+					frame.X = 0;
+				} else if (frame.X > offsetXWhenMenuIsOpen) {
+					frame.X = offsetXWhenMenuIsOpen;
+				}
+			}
+			else if (IsPanningRight() && !leftMenuWasOpenAtPanBegin)
+			{
+				if (frame.X > 0) {
+					frame.X = 0;
+				} else if (frame.X < offsetXWhenMenuIsOpen) {
+					frame.X = offsetXWhenMenuIsOpen;
+				}
 			}
 
 			PanGesture.View.Frame = frame;
 
 			if (PanGesture.State == UIGestureRecognizerState.Ended) {
 				PointF velocity = PanGesture.VelocityInView(PanGesture.View);
-				float distance = 0;
-				double animationDuration = 0;
 
-				if (velocity.X < 0) // close
+				if (IsPanningLeft() && !rightMenuWasOpenAtPanBegin)
 				{
-					// Compute animation duration
-					distance = frame.X;
-					animationDuration = Math.Abs(distance / velocity.X);
-
-					if (animationDuration > ANIMATION_DURATION) {
-						animationDuration = ANIMATION_DURATION;
-					}
-										
-					// Remove gestures
-					TapGesture.Enabled = false;
-					PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
-										
-					frame.X = 0;
-										
-					if (!menuWasOpenAtPanBegin) {
-						menuViewController.EndAppearanceTransition();
-					}
-										
-					menuViewController.BeginAppearanceTransition(false, true);
-
-					UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
-						contentViewController.View.Frame = frame;
-					}, (finished) => {
-						menuViewController.EndAppearanceTransition();
-					});
-
-				} 
-				else // open
+					frame = LeftMenuOpen (velocity, frame, offsetXWhenMenuIsOpen);
+				}
+				else if (IsPanningLeft() && rightMenuWasOpenAtPanBegin)
 				{
-					distance = Math.Abs(offsetXWhenMenuIsOpen - frame.X);
-					animationDuration = Math.Abs(distance / velocity.X);
-					if (animationDuration > ANIMATION_DURATION){
-						animationDuration = ANIMATION_DURATION;
-					}
+					frame = RightMenuClose (velocity, frame);
 
-					frame.X = offsetXWhenMenuIsOpen;
-					UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
-						contentViewController.View.Frame = frame;
-					}, (finished) => {
-						TapGesture.Enabled = true;
+					if (leftMenuViewController != null)
+						leftMenuViewController.View.Hidden = false;
+				}
+				else if (IsPanningRight() && !leftMenuWasOpenAtPanBegin)
+				{
+					frame = RightMenuOpen (velocity, frame, offsetXWhenMenuIsOpen);
+				}
+				else if (IsPanningRight() && leftMenuWasOpenAtPanBegin)
+				{
+					frame = LeftMenuClose (velocity, frame);
 
-						if (!menuWasOpenAtPanBegin){
-							menuViewController.EndAppearanceTransition();
-						}
-					});
+					if (rightMenuViewController != null)
+						rightMenuViewController.View.Hidden = false;
 				}
 
 				contentViewControllerFrame = frame;
 			}
 		}
 
-		// - (BOOL)isMenuOpen;
-		public bool IsMenuOpen ()
+		private RectangleF LeftMenuOpen(PointF velocity, RectangleF frame, float offsetXWhenMenuIsOpen)
 		{
+			float distance = 0;
+			double animationDuration = 0;
+
+			distance = Math.Abs(offsetXWhenMenuIsOpen - frame.X);
+			animationDuration = Math.Abs(distance / velocity.X);
+			if (animationDuration > ANIMATION_DURATION){
+				animationDuration = ANIMATION_DURATION;
+			}
+
+			frame.X = offsetXWhenMenuIsOpen;
+			UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
+				contentViewController.View.Frame = frame;
+			}, (finished) => {
+				TapGesture.Enabled = true;
+
+				if (!leftMenuWasOpenAtPanBegin && leftMenuViewController != null){
+					leftMenuViewController.EndAppearanceTransition();
+				}
+			});
+
+			return frame;
+		}
+
+		private RectangleF LeftMenuClose(PointF velocity, RectangleF frame)
+		{
+			float distance = 0;
+			double animationDuration = 0;
+
+			// Compute animation duration
+			distance = frame.X;
+			animationDuration = Math.Abs(distance / velocity.X);
+
+			if (animationDuration > ANIMATION_DURATION) {
+				animationDuration = ANIMATION_DURATION;
+			}
+
+			// Remove gestures
+			TapGesture.Enabled = false;
+			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+
+			frame.X = 0;
+
+			if (!leftMenuWasOpenAtPanBegin) {
+				leftMenuViewController.EndAppearanceTransition();
+			}
+
+			leftMenuViewController.BeginAppearanceTransition(false, true);
+
+			UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
+				contentViewController.View.Frame = frame;
+			}, (finished) => {
+
+				leftMenuViewController.EndAppearanceTransition();
+			});
+
+			return frame;
+		}
+
+		private RectangleF RightMenuOpen(PointF velocity, RectangleF frame, float offsetXWhenMenuIsOpen)
+		{
+			float distance = 0;
+			double animationDuration = 0;
+
+			distance = offsetXWhenMenuIsOpen - frame.X;
+			animationDuration = Math.Abs(distance / velocity.X);
+			if (animationDuration > ANIMATION_DURATION){
+				animationDuration = ANIMATION_DURATION;
+			}
+
+			frame.X = offsetXWhenMenuIsOpen;
+			UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
+				contentViewController.View.Frame = frame;
+			}, (finished) => {
+				TapGesture.Enabled = true;
+
+				if (!rightMenuWasOpenAtPanBegin){
+					rightMenuViewController.EndAppearanceTransition();
+				}
+			});
+
+			return frame;
+		}
+
+		private RectangleF RightMenuClose(PointF velocity, RectangleF frame)
+		{
+			float distance = 0;
+			double animationDuration = 0;
+
+			// Compute animation duration
+			distance = frame.X;
+			animationDuration = Math.Abs(distance / velocity.X);
+
+			if (animationDuration > ANIMATION_DURATION) {
+				animationDuration = ANIMATION_DURATION;
+			}
+
+			// Remove gestures
+			TapGesture.Enabled = false;
+			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+
+			frame.X = 0;
+
+			if (!rightMenuWasOpenAtPanBegin) {
+				rightMenuViewController.EndAppearanceTransition();
+			}
+
+			rightMenuViewController.BeginAppearanceTransition(false, true);
+
+			UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
+				contentViewController.View.Frame = frame;
+			}, (finished) => {
+				rightMenuViewController.EndAppearanceTransition();
+			});
+
+			return frame;
+		}
+
+		// - (BOOL)isMenuOpen;
+
+		public bool IsLeftMenuOpen()
+		{
+			if (leftMenuViewController == null)
+				return false;
+
 			return contentViewController.View.Frame.X > 0;
+		}
+
+		public bool IsRightMenuOpen ()
+		{
+			if (rightMenuViewController == null)
+				return false;
+
+			return contentViewController.View.Frame.X < 0;
 		}
 
 		// - (CGFloat)offsetXWhenMenuIsOpen
 		public float OffsetXWhenMenuIsOpen ()
 		{
-			return View.Bounds.Width - _widthOfContentViewVisible;
+			float offset = 0f;
+
+			if (this.VelocityX == 0)
+			{
+				if (leftBarButtonClicked)
+					offset = View.Bounds.Width - _widthOfContentViewVisible;
+				else
+					offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+			}
+			else
+			{
+				if (IsPanningLeft())
+					offset = View.Bounds.Width - _widthOfContentViewVisible;
+				else 
+					offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+			}
+			return offset;
 		}
 
 	}

@@ -9,7 +9,6 @@ namespace MonoTouch.SlideMenu.Demo
 	public partial class AppDelegate : UIApplicationDelegate
 	{
 		UIWindow window;
-		SlideMenuController _slideController;
 
 		public override bool FinishedLaunching (UIApplication app, NSDictionary options)
 		{
@@ -19,22 +18,22 @@ namespace MonoTouch.SlideMenu.Demo
 			DetailsViewController detailsViewController = new DetailsViewController();
 
 			SlideMenuController slideMenuViewController = new SlideMenuController(menuViewController, detailsViewController);
+			slideMenuViewController.SetRightMenuViewController (new MenuViewController(UITableViewStyle.Grouped));
 
-			slideMenuViewController.SetLeftBarButtonForContentView (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
-			slideMenuViewController.LeftBarButtonClicked += HandleLeftBarButtonClicked;
+			slideMenuViewController.SetLeftBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
+			slideMenuViewController.SetRightBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
 
-			_slideController = slideMenuViewController;
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				slideMenuViewController.WidthofContentViewVisible = 300f;
+			else
+				slideMenuViewController.WidthofContentViewVisible = 44f;
+
 			UINavigationController cont = new UINavigationController (slideMenuViewController);
 			window.RootViewController = cont;
 
 			window.BackgroundColor = UIColor.White;
 			window.MakeKeyAndVisible ();			
 			return true;
-		}
-
-		private void HandleLeftBarButtonClicked(object sender, EventArgs e)
-		{
-			_slideController.ToggleMenuAnimated ();
 		}
 	}
 }

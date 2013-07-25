@@ -24,7 +24,7 @@ namespace MonoTouch.SlideMenu.Demo
 			{
 				var menuButton = new UIBarButtonItem(UIBarButtonSystemItem.Rewind, this, null);
 				menuButton.Clicked += delegate (object sender, EventArgs e) {
-					this.SlideMenuController ().ToggleMenuAnimated ();
+					//this.SlideMenuController ().ToggleMenuAnimated ();
 				};
 
 				NavigationItem.LeftBarButtonItem = menuButton;
@@ -33,7 +33,7 @@ namespace MonoTouch.SlideMenu.Demo
 			ShowMenuButton.TouchUpInside += (object sender, EventArgs e) => {
 				var slideMenuController = this.SlideMenuController();
 				if (slideMenuController != null) {
-					slideMenuController.ShowMenuAnimated(true, null);
+					//slideMenuController.ShowMenuAnimated(true, null);
 				}
 			};
 		}
