@@ -125,12 +125,24 @@ namespace MonoTouch.SlideMenu
 			if (this.NavigationItem.LeftBarButtonItem != null)
 			{
 				this.NavigationItem.LeftBarButtonItem.Clicked -= HandleLeftBarButtonClicked;
+
+				if (this.NavigationItem.LeftBarButtonItem.CustomView is UIButton) {
+					var button = this.NavigationItem.LeftBarButtonItem.CustomView as UIButton;
+					button.TouchUpInside -= HandleLeftBarButtonClicked;
+				}
+
 				this.NavigationItem.LeftBarButtonItem.Dispose ();
 				this.NavigationItem.LeftBarButtonItem = null;
 			}
 
 			contentViewController.NavigationItem.LeftBarButtonItem = item;
 			this.NavigationItem.LeftBarButtonItem = item;
+
+			if (this.NavigationItem.LeftBarButtonItem.CustomView is UIButton) {
+				var button = this.NavigationItem.LeftBarButtonItem.CustomView as UIButton;
+				button.TouchUpInside += HandleLeftBarButtonClicked;
+			}
+
 			this.NavigationItem.LeftBarButtonItem.Clicked += HandleLeftBarButtonClicked;
 		}
 
@@ -142,12 +154,24 @@ namespace MonoTouch.SlideMenu
 			if (this.NavigationItem.RightBarButtonItem != null)
 			{
 				this.NavigationItem.RightBarButtonItem.Clicked -= HandleRightBarButtonClicked;
+
+				if (this.NavigationItem.RightBarButtonItem.CustomView is UIButton) {
+					var button = this.NavigationItem.RightBarButtonItem.CustomView as UIButton;
+					button.TouchUpInside -= HandleRightBarButtonClicked;
+				}
+
 				this.NavigationItem.RightBarButtonItem.Dispose ();
 				this.NavigationItem.RightBarButtonItem = null;
 			}
 
 			contentViewController.NavigationItem.RightBarButtonItem = item;
 			this.NavigationItem.RightBarButtonItem = item;
+
+			if (this.NavigationItem.RightBarButtonItem.CustomView is UIButton) {
+				var button = this.NavigationItem.RightBarButtonItem.CustomView as UIButton;
+				button.TouchUpInside += HandleRightBarButtonClicked;
+			}
+
 			this.NavigationItem.RightBarButtonItem.Clicked += HandleRightBarButtonClicked;
 		}
 
@@ -496,15 +520,17 @@ namespace MonoTouch.SlideMenu
 		// - (void)showContentViewControllerAnimated:(BOOL)animated completion:(void(^)(BOOL finished))completion
 		public void ShowContentViewControllerAnimated (bool animated, UICompletionHandler completion)
 		{
+			bool isLeftMenuOpen = IsLeftMenuOpen ();
+			bool isRightMenuOpen = IsRightMenuOpen ();
 			// Remove gestures
 			TapGesture.Enabled = false;
 			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
 
-			if (IsLeftMenuOpen()) {
+			if (isLeftMenuOpen) {
 				leftMenuViewController.View.UserInteractionEnabled = false;
 			}
 
-			if (IsRightMenuOpen()) {
+			if (isRightMenuOpen) {
 				rightMenuViewController.View.UserInteractionEnabled = false;
 			}
 
@@ -514,11 +540,11 @@ namespace MonoTouch.SlideMenu
 			RectangleF contentViewFrame = contentView.Frame;
 			contentViewFrame.X = 0;
 
-			if (IsLeftMenuOpen()) {
+			if (isLeftMenuOpen) {
 				leftMenuViewController.BeginAppearanceTransition (false, animated);
 			}
 
-			if (IsRightMenuOpen()) {
+			if (isRightMenuOpen) {
 				rightMenuViewController.BeginAppearanceTransition (false, animated);
 			}
 
@@ -526,12 +552,12 @@ namespace MonoTouch.SlideMenu
 				contentView.Frame = contentViewFrame;
 			}, (finished) => {
 
-				if (leftMenuViewController != null) {
+				if (isLeftMenuOpen) {
 					leftMenuViewController.EndAppearanceTransition ();
 					leftMenuViewController.View.UserInteractionEnabled = true;
 				}
 
-				if (rightMenuViewController != null) {
+				if (isRightMenuOpen) {
 					rightMenuViewController.EndAppearanceTransition();
 					rightMenuViewController.View.UserInteractionEnabled = true;
 				}
@@ -555,19 +581,21 @@ namespace MonoTouch.SlideMenu
 					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
 						rightMenuViewController.View.Hidden = false;
 
+					if (rightMenuViewController != null)
+						rightMenuViewController.View.Hidden = true;
+
+					ShowLeftMenuAnimated (true, null);
+
+					leftBarButtonClicked = false;
 				});
-				return;
 			}
-
-			if (IsLeftMenuOpen()){
+			else if (IsLeftMenuOpen()){
 				ShowContentViewControllerAnimated (true, (finished) => {
-
-					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
-						leftMenuViewController.View.Hidden = false;
 
 					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
 						rightMenuViewController.View.Hidden = false;
 
+					leftBarButtonClicked = false;
 				});
 			} else {
 
@@ -575,6 +603,8 @@ namespace MonoTouch.SlideMenu
 					rightMenuViewController.View.Hidden = true;
 
 				ShowLeftMenuAnimated (true, null);
+
+				leftBarButtonClicked = false;
 			}
 		}
 
@@ -590,11 +620,15 @@ namespace MonoTouch.SlideMenu
 					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
 						rightMenuViewController.View.Hidden = false;
 
-				});
-				return;
-			}
+					if (leftMenuViewController != null)
+						leftMenuViewController.View.Hidden = true;
 
-			if (IsRightMenuOpen()){
+					ShowRightMenuAnimated (true, null);
+
+					rightBarButtonClicked = false;
+				});
+			}
+			else if (IsRightMenuOpen()){
 				ShowContentViewControllerAnimated (true, (finished) => {
 
 					if (leftMenuViewController != null && leftMenuViewController.View.Hidden)
@@ -603,6 +637,7 @@ namespace MonoTouch.SlideMenu
 					if (rightMenuViewController != null && rightMenuViewController.View.Hidden)
 						rightMenuViewController.View.Hidden = false;
 
+					rightBarButtonClicked = false;
 				});
 			} else {
 
@@ -610,6 +645,8 @@ namespace MonoTouch.SlideMenu
 					leftMenuViewController.View.Hidden = true;
 
 				ShowRightMenuAnimated (true, null);
+
+				rightBarButtonClicked = false;
 			}
 		}
 

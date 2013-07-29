@@ -72,12 +72,12 @@ namespace MonoTouch.SlideMenu.Demo
 		{
 			var smc = controller.SlideMenuController ();
 			if (smc != null) {
-				var detailsViewController = new DetailsViewController();
-				UINavigationController navController = new UINavigationController(detailsViewController);
-				smc.SetContentViewControllerAnimated(navController, true, null);
-			} else {
-				tableView.DeselectRow(indexPath, true);
+				var menuViewController = new MenuViewController (UITableViewStyle.Grouped);
+				smc.SetRightMenuViewController (menuViewController);
+				smc.ToggleRightMenuAnimated ();
 			}
+
+			tableView.DeselectRow(indexPath, true);
 		}
 	}
 }
