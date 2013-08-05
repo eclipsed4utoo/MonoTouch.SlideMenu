@@ -2,6 +2,10 @@ using System;
 using MonoTouch.UIKit;
 using MonoTouch.CoreAnimation;
 using System.Drawing;
+using System.Collections.Generic;
+using System.Linq;
+using MonoTouch.Foundation;
+using System.Reflection;
 
 namespace MonoTouch.SlideMenu
 {
@@ -39,6 +43,22 @@ namespace MonoTouch.SlideMenu
 			if (RightBarButtonClicked != null)
 			{
 				RightBarButtonClicked (this, EventArgs.Empty);
+			}
+		}
+
+		public event EventHandler<SlideMenuBarButtonEventArgs> AdditionalLeftBarButtonClicked;
+		private void OnAdditionalLeftBarButtonClicked(int index)
+		{
+			if (AdditionalLeftBarButtonClicked != null) {
+				AdditionalLeftBarButtonClicked (this, new SlideMenuBarButtonEventArgs (index));
+			}
+		}
+
+		public event EventHandler<SlideMenuBarButtonEventArgs> AdditionalRightBarButtonClicked;
+		private void OnAdditionalRightBarButtonClicked(int index)
+		{
+			if (AdditionalRightBarButtonClicked != null) {
+				AdditionalRightBarButtonClicked (this, new SlideMenuBarButtonEventArgs (index));
 			}
 		}
 
@@ -175,6 +195,158 @@ namespace MonoTouch.SlideMenu
 			this.NavigationItem.RightBarButtonItem.Clicked += HandleRightBarButtonClicked;
 		}
 
+		public int AddAdditionalLeftBarButton(UIBarButtonItem item)
+		{
+			if (item == null)
+				throw new ArgumentNullException("item cannot be null");
+
+			item.Clicked += AdditionalLeftBarButton_Clicked;
+
+			if (item.CustomView is UIButton) {
+				var button = item.CustomView as UIButton;
+				button.TouchUpInside += AdditionalLeftBarButton_Clicked;
+			}
+
+			List<UIBarButtonItem> items = this.NavigationItem.LeftBarButtonItems.ToList ();
+			items.Add (item);
+			this.NavigationItem.LeftBarButtonItems = items.ToArray();
+
+			return this.NavigationItem.LeftBarButtonItems.Length - 1;
+		}
+
+		public int AddAdditionalRightBarButton(UIBarButtonItem item)
+		{
+			if (item == null)
+				throw new ArgumentNullException ("item cannot be null");
+
+			item.Clicked += AdditionalRightBarButton_Clicked;
+
+			if (item.CustomView is UIButton) {
+				var button = item.CustomView as UIButton;
+				button.TouchUpInside += AdditionalRightBarButton_Clicked;
+			}
+
+			List<UIBarButtonItem> items = this.NavigationItem.RightBarButtonItems.ToList ();
+
+			int index = items.Count;
+
+			if (this.NavigationItem.RightBarButtonItem != null) {
+				var temp = this.NavigationItem.RightBarButtonItem;
+
+				items.Add (item);
+
+				this.NavigationItem.RightBarButtonItem = temp;
+			}
+
+			this.NavigationItem.RightBarButtonItems = items.ToArray ();
+
+			return index;
+		}
+
+		public void AddAdditionalLeftBarButtons (List<UIBarButtonItem> items)
+		{
+			if (items == null)
+				return;
+
+			// insert the current left bar button as the first time
+			if (this.NavigationItem.LeftBarButtonItem != null) {
+				items.Insert (0, this.NavigationItem.LeftBarButtonItem);
+			}
+
+			this.NavigationItem.LeftBarButtonItems = items.ToArray();
+		}
+
+		public void AddAdditionalRightBarButtons(List<UIBarButtonItem> items)
+		{
+			if (items == null)
+				return;
+
+			if (this.NavigationItem.RightBarButtonItem != null) {
+				items.Add (this.NavigationItem.RightBarButtonItem);
+			}
+
+			this.NavigationItem.RightBarButtonItems = items.ToArray ();
+		}
+
+		public void RemoveAdditionalLeftBarButton(int index)
+		{
+			if (index < 0)
+				return;
+
+			List<UIBarButtonItem> items = this.NavigationItem.LeftBarButtonItems.ToList ();
+
+			var item = items.ElementAtOrDefault (index);
+			if (item != null)
+			{
+				items.RemoveAt(index);
+
+				item.Clicked -= AdditionalLeftBarButton_Clicked;
+
+				if (item.CustomView is UIButton) {
+					var button = item.CustomView as UIButton;
+					button.TouchUpInside -= AdditionalLeftBarButton_Clicked;
+				}
+
+				item.Dispose ();
+			}
+
+			if (this.NavigationItem.LeftBarButtonItem != null) {
+				items.RemoveAt (0);
+			}
+
+			AddAdditionalLeftBarButtons (items);
+		}
+
+		public void RemoveAdditionalRightBarButton(int index)
+		{
+			if (index < 0)
+				return;
+
+			List<UIBarButtonItem> items = this.NavigationItem.RightBarButtonItems.ToList ();
+
+			var item = items.ElementAtOrDefault (index);
+			if (item != null)
+			{
+				items.Remove (item);
+
+				if (items.Count == 1) {
+					this.NavigationItem.RightBarButtonItem = items [0];
+				}
+				else if (items.Count > 1){
+					this.NavigationItem.RightBarButtonItem = items [items.Count - 1];
+				}
+
+				item.Clicked -= AdditionalRightBarButton_Clicked;
+
+				if (item.CustomView is UIButton) {
+					var button = item.CustomView as UIButton;
+					button.TouchUpInside -= AdditionalRightBarButton_Clicked;
+				}
+
+				item.Dispose ();
+			}
+
+			if (this.NavigationItem.RightBarButtonItem != null && items.Count > 0) {
+				items.RemoveAt (items.Count - 1);
+			}
+
+			AddAdditionalRightBarButtons (items);
+		}
+
+		private void AdditionalLeftBarButton_Clicked(object sender, EventArgs e)
+		{
+			var button = sender as UIBarButtonItem;
+			int index = this.NavigationItem.LeftBarButtonItems.ToList ().IndexOf (button);
+			OnAdditionalLeftBarButtonClicked (index);
+		}
+
+		private void AdditionalRightBarButton_Clicked(object sender, EventArgs e)
+		{
+			var button = sender as UIBarButtonItem;
+			int index = this.NavigationItem.RightBarButtonItems.ToList ().IndexOf (button);
+			OnAdditionalRightBarButtonClicked (index);
+		}
+
 		private void HandleLeftBarButtonClicked (object sender, EventArgs e)
 		{
 			if (leftMenuViewController == null)
@@ -184,6 +356,10 @@ namespace MonoTouch.SlideMenu
 			rightBarButtonClicked = false;
 			ToggleLeftMenuAnimated();
 			OnLeftBarButtonClicked ();
+
+			if (this.NavigationItem.LeftBarButtonItems != null && this.NavigationItem.LeftBarButtonItems.Length > 1) {
+				OnAdditionalLeftBarButtonClicked (0);
+			}
 		}
 
 		private void HandleRightBarButtonClicked (object sender, EventArgs e)
@@ -195,6 +371,10 @@ namespace MonoTouch.SlideMenu
 			leftBarButtonClicked = false;
 			ToggleRightMenuAnimated();
 			OnRightBarButtonClicked ();
+
+			if (this.NavigationItem.RightBarButtonItems != null && this.NavigationItem.RightBarButtonItems.Length > 1) {
+				OnAdditionalRightBarButtonClicked (0);
+			}
 		}
 
 		// - (void)setleftMenuViewController:(UIViewController *)leftMenuViewController
@@ -225,10 +405,13 @@ namespace MonoTouch.SlideMenu
 				}
 
 				rightMenuViewController = controller;
-				AddChildViewController (rightMenuViewController);
-				rightMenuViewController.DidMoveToParentViewController (this);
-			}
 
+				if (controller != null)
+				{
+					AddChildViewController (rightMenuViewController);
+					rightMenuViewController.DidMoveToParentViewController (this);
+				}
+			}
 		}
 
 		// - (void)setContentViewController:(UIViewController *)contentViewController
@@ -348,7 +531,7 @@ namespace MonoTouch.SlideMenu
 		// - (BOOL)shouldAutomaticallyForwardAppearanceMethods
 		public override bool ShouldAutomaticallyForwardAppearanceMethods {
 			get {
-				return false;
+				return true;
 			}
 		}
 
@@ -492,6 +675,18 @@ namespace MonoTouch.SlideMenu
 			if (contentViewController != controller) 
 			{
 				// Preserve the frame
+				UIBarButtonItem temp = null;
+
+				if (this.NavigationItem.RightBarButtonItem != null) {
+					temp = this.NavigationItem.RightBarButtonItem;
+				}
+
+				this.NavigationItem.RightBarButtonItems = new UIBarButtonItem[0];
+
+				if (temp != null) {
+					this.NavigationItem.RightBarButtonItem = temp;
+				}
+
 				RectangleF frame = contentViewController.View.Frame;
 
 				// Remove old content view
@@ -560,6 +755,14 @@ namespace MonoTouch.SlideMenu
 				if (isRightMenuOpen) {
 					rightMenuViewController.EndAppearanceTransition();
 					rightMenuViewController.View.UserInteractionEnabled = true;
+				}
+
+				if (leftMenuViewController != null && leftMenuViewController.View.Hidden) {
+					leftMenuViewController.View.Hidden = false;
+				}
+
+				if (rightMenuViewController != null && rightMenuViewController.View.Hidden) {
+					rightMenuViewController.View.Hidden = false;
 				}
 
 				if (completion != null) {

@@ -1,4 +1,5 @@
 using MonoTouch.UIKit;
+using System;
 
 namespace MonoTouch.SlideMenu
 {
@@ -7,6 +8,9 @@ namespace MonoTouch.SlideMenu
 	{
 		public static SlideMenuController SlideMenuController(this UIViewController controller) 
 		{
+			if (controller.Handle == IntPtr.Zero)
+				return null;
+
 			SlideMenuController slideMenuController = null;
 			UIViewController parentViewController = controller.ParentViewController;
 
