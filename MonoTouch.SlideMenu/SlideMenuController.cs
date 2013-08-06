@@ -1218,8 +1218,14 @@ namespace MonoTouch.SlideMenu
 			{
 				if (leftBarButtonClicked)
 					offset = View.Bounds.Width - _widthOfContentViewVisible;
-				else
-					offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+				else {
+					if (IsLeftMenuOpen()) {
+						offset = View.Bounds.Width - _widthOfContentViewVisible;
+					}
+					else {
+						offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+					}
+				}
 			}
 			else
 			{
