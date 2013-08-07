@@ -26,6 +26,8 @@ namespace MonoTouch.SlideMenu
 		bool rightMenuWasOpenAtPanBegin;
 		bool leftBarButtonClicked = false;
 		bool rightBarButtonClicked = false;
+		bool shouldResizeLeftMenuView = false;
+		bool shouldResizeRightMenuView = false;
 
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
@@ -642,6 +644,9 @@ namespace MonoTouch.SlideMenu
 		// - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 		public override void WillAnimateRotation (UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
+			shouldResizeLeftMenuView = true;
+			shouldResizeRightMenuView = true;
+
 			if (IsLeftMenuOpen () || IsRightMenuOpen()) {
 				RectangleF frame = contentViewController.View.Frame;
 				frame.X = OffsetXWhenMenuIsOpen();
@@ -664,6 +669,13 @@ namespace MonoTouch.SlideMenu
 				leftMenuViewController.View.Frame = menuFrame;
 				View.InsertSubview (leftMenuViewController.View, 0);
 			}
+			else if (shouldResizeLeftMenuView) {
+				RectangleF menuFrame = View.Bounds;
+				menuFrame.Width -= GetWidthOfContent(); 
+				leftMenuViewController.View.Frame = menuFrame;
+			}
+
+			shouldResizeLeftMenuView = false;
 		}
 
 		public void LoadRightMenuViewControllerViewIfNeeded()
@@ -675,6 +687,14 @@ namespace MonoTouch.SlideMenu
 				rightMenuViewController.View.Frame = menuFrame;
 				View.InsertSubview (rightMenuViewController.View, 0);
 			}
+			else if (shouldResizeRightMenuView) {
+				RectangleF menuFrame = View.Bounds;
+				menuFrame.Width -= GetWidthOfContent();
+				menuFrame.X += GetWidthOfContent();
+				rightMenuViewController.View.Frame = menuFrame;
+			}
+
+			shouldResizeRightMenuView = false;
 		}
 
 
