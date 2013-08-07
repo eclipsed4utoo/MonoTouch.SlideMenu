@@ -11,7 +11,9 @@ namespace MonoTouch.SlideMenu
 {
 	public class SlideMenuController : UIViewController
 	{
-		private float _widthOfContentViewVisible = 44.0f;
+		private float _widthOfPortraitContentViewVisible = 44.0f;
+		private float _widthOfLandscapeContentViewVisible = 44.0f;
+
 		const float ANIMATION_DURATION = 0.3f;
 
 		UIViewController leftMenuViewController;
@@ -25,8 +27,9 @@ namespace MonoTouch.SlideMenu
 		bool leftBarButtonClicked = false;
 		bool rightBarButtonClicked = false;
 
+
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
-		bool panEnabledWhenSlideMenuIsHidden;
+		bool _panEnabledWhenSlideMenuIsHidden;
 
 		public event EventHandler LeftBarButtonClicked;
 		private void OnLeftBarButtonClicked()
@@ -88,10 +91,22 @@ namespace MonoTouch.SlideMenu
 			}
 		}
 
-		public float WidthofContentViewVisible
+		public float WidthOfPortraitContentViewVisible
 		{
-			get { return _widthOfContentViewVisible; }
-			set { _widthOfContentViewVisible = value; }
+			get { return _widthOfPortraitContentViewVisible; }
+			set { _widthOfPortraitContentViewVisible = value; }
+		}
+
+		public float WidthOfLandscapeContentViewVisible
+		{
+			get { return _widthOfLandscapeContentViewVisible; }
+			set { _widthOfLandscapeContentViewVisible = value; }
+		}
+
+		public bool AllowGestureToOpenMenu
+		{
+			get { return _panEnabledWhenSlideMenuIsHidden; }
+			set { _panEnabledWhenSlideMenuIsHidden = value; }
 		}
 
 		public SlideMenuController (UIViewController leftMenuViewController, UIViewController contentViewController)
@@ -99,7 +114,7 @@ namespace MonoTouch.SlideMenu
 			this.SetLeftMenuViewController(leftMenuViewController);
 			this.SetContentViewController(contentViewController);
 
-			panEnabledWhenSlideMenuIsHidden = true;
+			_panEnabledWhenSlideMenuIsHidden = true;
 		}
 
 		/// <summary>
@@ -458,7 +473,7 @@ namespace MonoTouch.SlideMenu
 			TapGesture.Enabled = false;
 
 			contentViewController.View.AddGestureRecognizer(PanGesture);
-			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+			PanGesture.Enabled = _panEnabledWhenSlideMenuIsHidden;
 		}
 
 		// - (void)viewWillAppear:(BOOL)animated
@@ -645,7 +660,7 @@ namespace MonoTouch.SlideMenu
 		{
 			if (leftMenuViewController != null && leftMenuViewController.View.Superview == null) {
 				RectangleF menuFrame = View.Bounds;
-				menuFrame.Width -= _widthOfContentViewVisible; 
+				menuFrame.Width -= GetWidthOfContent(); 
 				leftMenuViewController.View.Frame = menuFrame;
 				View.InsertSubview (leftMenuViewController.View, 0);
 			}
@@ -655,8 +670,8 @@ namespace MonoTouch.SlideMenu
 		{
 			if (rightMenuViewController != null && rightMenuViewController.View.Superview == null) {
 				RectangleF menuFrame = View.Bounds;
-				menuFrame.Width -= _widthOfContentViewVisible;
-				menuFrame.X += _widthOfContentViewVisible;
+				menuFrame.Width -= GetWidthOfContent();
+				menuFrame.X += GetWidthOfContent();
 				rightMenuViewController.View.Frame = menuFrame;
 				View.InsertSubview (rightMenuViewController.View, 0);
 			}
@@ -719,7 +734,7 @@ namespace MonoTouch.SlideMenu
 			bool isRightMenuOpen = IsRightMenuOpen ();
 			// Remove gestures
 			TapGesture.Enabled = false;
-			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+			PanGesture.Enabled = _panEnabledWhenSlideMenuIsHidden;
 
 			if (isLeftMenuOpen) {
 				leftMenuViewController.View.UserInteractionEnabled = false;
@@ -1102,7 +1117,7 @@ namespace MonoTouch.SlideMenu
 
 			// Remove gestures
 			TapGesture.Enabled = false;
-			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+			PanGesture.Enabled = _panEnabledWhenSlideMenuIsHidden;
 
 			frame.X = 0;
 
@@ -1162,7 +1177,7 @@ namespace MonoTouch.SlideMenu
 
 			// Remove gestures
 			TapGesture.Enabled = false;
-			PanGesture.Enabled = panEnabledWhenSlideMenuIsHidden;
+			PanGesture.Enabled = _panEnabledWhenSlideMenuIsHidden;
 
 			frame.X = 0;
 
@@ -1209,6 +1224,19 @@ namespace MonoTouch.SlideMenu
 			return rightMenuViewController != null;
 		}
 
+		private float GetWidthOfContent()
+		{
+			if (UIApplication.SharedApplication.StatusBarOrientation == UIInterfaceOrientation.Portrait ||
+			    UIApplication.SharedApplication.StatusBarOrientation == UIInterfaceOrientation.PortraitUpsideDown)
+			{
+				return _widthOfPortraitContentViewVisible;
+			}
+			else
+			{
+				return _widthOfLandscapeContentViewVisible;
+			}
+		}
+
 		// - (CGFloat)offsetXWhenMenuIsOpen
 		public float OffsetXWhenMenuIsOpen ()
 		{
@@ -1217,23 +1245,24 @@ namespace MonoTouch.SlideMenu
 			if (this.VelocityX == 0)
 			{
 				if (leftBarButtonClicked)
-					offset = View.Bounds.Width - _widthOfContentViewVisible;
+					offset = View.Bounds.Width - GetWidthOfContent();
 				else {
 					if (IsLeftMenuOpen()) {
-						offset = View.Bounds.Width - _widthOfContentViewVisible;
+						offset = View.Bounds.Width - GetWidthOfContent();
 					}
 					else {
-						offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+						offset = -(View.Bounds.Width - GetWidthOfContent());
 					}
 				}
 			}
 			else
 			{
 				if (IsPanningLeft())
-					offset = View.Bounds.Width - _widthOfContentViewVisible;
+					offset = View.Bounds.Width - GetWidthOfContent();
 				else 
-					offset = -(View.Bounds.Width - _widthOfContentViewVisible);
+					offset = -(View.Bounds.Width - GetWidthOfContent());
 			}
+
 			return offset;
 		}
 

@@ -23,10 +23,10 @@ namespace MonoTouch.SlideMenu.Demo
 			slideMenuViewController.SetLeftBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
 			slideMenuViewController.SetRightBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
-				slideMenuViewController.WidthofContentViewVisible = 300f;
-			else
-				slideMenuViewController.WidthofContentViewVisible = 44f;
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad) {
+				slideMenuViewController.WidthOfPortraitContentViewVisible = 300f;
+				slideMenuViewController.WidthOfLandscapeContentViewVisible = 556f;
+			}
 
 			UINavigationController cont = new UINavigationController (slideMenuViewController);
 			window.RootViewController = cont;
