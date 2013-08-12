@@ -647,6 +647,9 @@ namespace MonoTouch.SlideMenu
 			shouldResizeLeftMenuView = true;
 			shouldResizeRightMenuView = true;
 
+			LoadLeftMenuViewControllerViewIfNeeded ();
+			LoadRightMenuViewControllerViewIfNeeded ();
+
 			if (IsLeftMenuOpen () || IsRightMenuOpen()) {
 				RectangleF frame = contentViewController.View.Frame;
 				frame.X = OffsetXWhenMenuIsOpen();
@@ -655,7 +658,6 @@ namespace MonoTouch.SlideMenu
 				});
 			}
 		}
-
 
 		// #pragma mark - Menu view lazy load
 
