@@ -644,8 +644,13 @@ namespace MonoTouch.SlideMenu
 		// - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 		public override void WillAnimateRotation (UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			shouldResizeLeftMenuView = true;
-			shouldResizeRightMenuView = true;
+			if (leftMenuViewController != null) {
+				shouldResizeLeftMenuView = true;
+			}
+
+			if (rightMenuViewController != null) {
+				shouldResizeRightMenuView = true;
+			}
 
 			LoadLeftMenuViewControllerViewIfNeeded ();
 			LoadRightMenuViewControllerViewIfNeeded ();
