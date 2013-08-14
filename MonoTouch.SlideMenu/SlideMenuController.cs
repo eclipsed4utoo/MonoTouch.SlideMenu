@@ -13,6 +13,7 @@ namespace MonoTouch.SlideMenu
 	{
 		private float _widthOfPortraitContentViewVisible = 44.0f;
 		private float _widthOfLandscapeContentViewVisible = 44.0f;
+		private bool _supportContentViewNavigation = false;
 
 		const float ANIMATION_DURATION = 0.3f;
 
@@ -29,6 +30,8 @@ namespace MonoTouch.SlideMenu
 		bool shouldResizeLeftMenuView = false;
 		bool shouldResizeRightMenuView = false;
 
+		UINavigationController parentNavController = null;
+		UIBarButtonItem backButtonItem = null;
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
 		bool _panEnabledWhenSlideMenuIsHidden;
@@ -111,10 +114,21 @@ namespace MonoTouch.SlideMenu
 			set { _panEnabledWhenSlideMenuIsHidden = value; }
 		}
 
+		public bool SupportContentViewNavigation
+		{
+			get { return _supportContentViewNavigation; }
+			set { _supportContentViewNavigation = value; }
+		}
+
 		public SlideMenuController (UIViewController leftMenuViewController, UIViewController contentViewController)
 		{
-			this.SetLeftMenuViewController(leftMenuViewController);
-			this.SetContentViewController(contentViewController);
+			if (leftMenuViewController != null) {
+				this.SetLeftMenuViewController(leftMenuViewController);
+			}
+
+			if (contentViewController != null) {
+				this.SetContentViewController(contentViewController);
+			}
 
 			_panEnabledWhenSlideMenuIsHidden = true;
 		}
@@ -128,7 +142,9 @@ namespace MonoTouch.SlideMenu
 		public SlideMenuController (UIViewController leftMenuViewController, UIViewController rightMenuViewController, UIViewController contentViewController)
 			: this(leftMenuViewController, contentViewController)
 		{
-			this.SetRightMenuViewController (rightMenuViewController);
+			if (rightMenuViewController != null) {
+				this.SetRightMenuViewController (rightMenuViewController);
+			}
 		}
 
 		protected override void Dispose (bool disposing)
@@ -394,6 +410,83 @@ namespace MonoTouch.SlideMenu
 			}
 		}
 
+		internal void AddBackButton()
+		{
+			if (this.NavigationItem.LeftBarButtonItems.Length > 0 && 
+			    this.NavigationItem.LeftBarButtonItems[0] == backButtonItem) {
+				return;
+			}
+
+
+			if (backButtonItem == null) {
+//				UIButton button = new UIButton ();
+//				UILabel label = new UILabel ();
+//				label.BackgroundColor = UIColor.Clear;
+//				label.Font = UIFont.BoldSystemFontOfSize (12);
+//				label.TextColor = UIColor.White;
+//				label.ShadowColor = UIColor.DarkGray;
+//				label.ShadowOffset = new SizeF (0, -1);
+//				label.Text = "Back";
+//				label.SizeToFit ();
+//
+//				UIImage norm = new UIImage ("backBarButton.png").StretchableImage(13, 0);
+//				UIImage click = new UIImage ("backBarButtonHover.png").StretchableImage(13, 0);
+//
+//				button.SetBackgroundImage (norm, UIControlState.Normal);
+//				button.SetBackgroundImage (click, UIControlState.Highlighted);
+//				button.TouchUpInside += BackButtonClicked;
+//
+//				SizeF labelSize = label.Frame.Size;
+//				float controlWidth = labelSize.Width + 20;
+//				controlWidth = controlWidth >= norm.Size.Width ? controlWidth : norm.Size.Width;
+//
+//				button.Frame = new RectangleF (0, 0, controlWidth, 30);
+//				button.AddSubview (label);
+//				label.Frame = new RectangleF (12, 6, labelSize.Width, labelSize.Height);
+//
+//				backButtonItem = new UIBarButtonItem (button);
+
+				backButtonItem = new UIBarButtonItem ("Back", UIBarButtonItemStyle.Done, BackButtonClicked);
+			}
+
+			var buttons = this.NavigationItem.LeftBarButtonItems.ToList();
+			buttons.Insert (0, backButtonItem);
+			this.NavigationItem.SetLeftBarButtonItems (buttons.ToArray(), true);
+		}
+
+		private void BackButtonClicked(object sender, EventArgs e)
+		{
+			if (IsLeftMenuOpen()) {
+				ToggleLeftMenuAnimated ();
+			}
+
+			if (IsRightMenuOpen()) {
+				ToggleRightMenuAnimated ();
+			}
+
+			parentNavController.PopViewControllerAnimated (true);
+		}
+
+		internal void RemoveBackButton()
+		{
+			if (this.NavigationItem.LeftBarButtonItems.Length > 0 && 
+			    this.NavigationItem.LeftBarButtonItems[0] == backButtonItem) {
+
+				var buttons = this.NavigationItem.LeftBarButtonItems.ToList();
+				buttons.RemoveAt (0);
+				this.NavigationItem.SetLeftBarButtonItems (buttons.ToArray (), true);
+			}
+		}
+
+		public void PushContentViewController(UIViewController controller, bool animated)
+		{
+			if (!_supportContentViewNavigation) {
+				throw new ApplicationException ("Not supporting navigation. Use SetContentViewControllerAnimated");
+			}
+		
+			parentNavController.PushViewController (controller, animated);
+		}
+
 		// - (void)setleftMenuViewController:(UIViewController *)leftMenuViewController
 		public void SetLeftMenuViewController (UIViewController controller)
 		{
@@ -434,6 +527,30 @@ namespace MonoTouch.SlideMenu
 		// - (void)setContentViewController:(UIViewController *)contentViewController
 		public void SetContentViewController (UIViewController controller)
 		{
+			var temp = controller.ParentNavController ();
+
+			if (temp == null && _supportContentViewNavigation) {
+				throw new ApplicationException ("controller must be inside of a UINavigationController");
+			}
+
+			if (_supportContentViewNavigation) {
+
+				if (parentNavController != null) {
+					parentNavController.WillMoveToParentViewController(null);
+					parentNavController.RemoveFromParentViewController();
+					parentNavController.Dispose();
+				}
+
+				parentNavController = temp;
+				contentViewController = parentNavController;
+				parentNavController.NavigationBarHidden = true;
+				parentNavController.Delegate = new SlideMenuControllerDelegate (this);
+				AddChildViewController (contentViewController);
+				contentViewController.DidMoveToParentViewController (this);
+				return;
+			}
+
+			// not supporting navigation
 			if (contentViewController != controller) 
 			{
 				if (contentViewController != null) {

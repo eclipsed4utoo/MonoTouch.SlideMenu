@@ -44,5 +44,6 @@
     <Compile Include="SlideMenuController.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="SlideMenuBarButtonEventArgs.cs" />
+    <Compile Include="SlideMenuControllerDelegate.cs" />
   </ItemGroup>
 </Project>
