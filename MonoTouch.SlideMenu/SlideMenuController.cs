@@ -70,6 +70,33 @@ namespace MonoTouch.SlideMenu
 			}
 		}
 
+		public UIViewController RightMenuViewController
+		{
+			get { return rightMenuViewController; }
+		}
+
+		public UIViewController ContentViewController
+		{
+			get { return contentViewController; }
+		}
+
+		public UIViewController LeftMenuViewController
+		{
+			get { return leftMenuViewController; }
+		}
+
+		public UIViewController TopViewController
+		{
+			get
+			{
+				if (!_supportContentViewNavigation || parentNavController == null) {
+					return null;
+				}
+
+				return parentNavController.TopViewController;
+			}
+		}
+
 		public UIBarButtonItem SlideControllerLeftBarButton
 		{
 			get
@@ -118,6 +145,17 @@ namespace MonoTouch.SlideMenu
 		{
 			get { return _supportContentViewNavigation; }
 			set { _supportContentViewNavigation = value; }
+		}
+
+		public SlideMenuController () 
+		{
+
+		}
+
+		public SlideMenuController (UIViewController contentViewController)
+			: this (null, contentViewController)
+		{
+
 		}
 
 		public SlideMenuController (UIViewController leftMenuViewController, UIViewController contentViewController)
@@ -188,8 +226,11 @@ namespace MonoTouch.SlideMenu
 				this.NavigationItem.LeftBarButtonItem = null;
 			}
 
-			contentViewController.NavigationItem.LeftBarButtonItem = item;
 			this.NavigationItem.LeftBarButtonItem = item;
+
+			if (_supportContentViewNavigation && this.NavigationController != null) {
+				this.NavigationController.NavigationItem.LeftBarButtonItem = item;
+			}
 
 			if (this.NavigationItem.LeftBarButtonItem.CustomView is UIButton) {
 				var button = this.NavigationItem.LeftBarButtonItem.CustomView as UIButton;
@@ -217,7 +258,6 @@ namespace MonoTouch.SlideMenu
 				this.NavigationItem.RightBarButtonItem = null;
 			}
 
-			contentViewController.NavigationItem.RightBarButtonItem = item;
 			this.NavigationItem.RightBarButtonItem = item;
 
 			if (this.NavigationItem.RightBarButtonItem.CustomView is UIButton) {
@@ -487,6 +527,15 @@ namespace MonoTouch.SlideMenu
 			parentNavController.PushViewController (controller, animated);
 		}
 
+		public void PopContentViewControllerAnimated(bool animated)
+		{
+			if (!_supportContentViewNavigation) {
+				throw new ApplicationException ("Not supporting navigation. Use SetContentViewControllerAnimated");
+			}
+
+			parentNavController.PopViewControllerAnimated (animated);
+		}
+
 		// - (void)setleftMenuViewController:(UIViewController *)leftMenuViewController
 		public void SetLeftMenuViewController (UIViewController controller)
 		{
@@ -527,10 +576,11 @@ namespace MonoTouch.SlideMenu
 		// - (void)setContentViewController:(UIViewController *)contentViewController
 		public void SetContentViewController (UIViewController controller)
 		{
-			var temp = controller.ParentNavController ();
+			UINavigationController temp = controller.ParentNavController ();
 
 			if (temp == null && _supportContentViewNavigation) {
-				throw new ApplicationException ("controller must be inside of a UINavigationController");
+				temp = new UINavigationController (controller);
+				temp.SetNavigationBarHidden (true, false);
 			}
 
 			if (_supportContentViewNavigation) {
@@ -543,7 +593,6 @@ namespace MonoTouch.SlideMenu
 
 				parentNavController = temp;
 				contentViewController = parentNavController;
-				parentNavController.NavigationBarHidden = true;
 				parentNavController.Delegate = new SlideMenuControllerDelegate (this);
 				AddChildViewController (contentViewController);
 				contentViewController.DidMoveToParentViewController (this);

@@ -15,25 +15,36 @@ namespace MonoTouch.SlideMenu.Demo
 		{
 			base.DidReceiveMemoryWarning ();
 		}
-		
+
+		int clicks = 0;
 		public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
 
-			if (this.SlideMenuController() != null)
-			{
-				var menuButton = new UIBarButtonItem(UIBarButtonSystemItem.Rewind, this, null);
-				menuButton.Clicked += delegate (object sender, EventArgs e) {
-					this.SlideMenuController ().ToggleLeftMenuAnimated ();
-				};
-
-				NavigationItem.LeftBarButtonItem = menuButton;
-			}
+//			if (this.SlideMenuController() != null)
+//			{
+//				var menuButton = new UIBarButtonItem(UIBarButtonSystemItem.Rewind, this, null);
+//				menuButton.Clicked += delegate (object sender, EventArgs e) {
+//					this.SlideMenuController ().ToggleLeftMenuAnimated ();
+//				};
+//
+//				NavigationItem.LeftBarButtonItem = menuButton;
+//			}
 
 			ShowMenuButton.TouchUpInside += (object sender, EventArgs e) => {
 				var slideMenuController = this.SlideMenuController();
 				if (slideMenuController != null) {
-					slideMenuController.ShowLeftMenuAnimated(true, null);
+//					slideMenuController.ShowLeftMenuAnimated(true, null);
+					clicks++;
+					SampleTextView.Text += " " + clicks;
+					slideMenuController.PushContentViewController(new DetailsViewController(), true);
+				}
+			};
+
+			ResetNavButton.TouchUpInside += (object sender, EventArgs e) => {
+				var slideMenuController = this.SlideMenuController();
+				if (slideMenuController != null) {
+					slideMenuController.SetContentViewControllerAnimated(new UINavigationController(new DetailsViewController()), true, null);
 				}
 			};
 		}

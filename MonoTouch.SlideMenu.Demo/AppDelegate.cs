@@ -16,8 +16,12 @@ namespace MonoTouch.SlideMenu.Demo
 
 			MenuViewController menuViewController = new MenuViewController(UITableViewStyle.Grouped);
 			DetailsViewController detailsViewController = new DetailsViewController();
+			
 
-			SlideMenuController slideMenuViewController = new SlideMenuController(null, new MenuViewController(UITableViewStyle.Plain), detailsViewController);
+			SlideMenuController slideMenuViewController = new SlideMenuController();
+			UINavigationController cont = new UINavigationController (slideMenuViewController);
+			slideMenuViewController.SupportContentViewNavigation = true;
+			slideMenuViewController.SetContentViewController (detailsViewController);
 
 			slideMenuViewController.SetLeftMenuViewController (menuViewController);
 			slideMenuViewController.SetLeftBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
@@ -28,7 +32,7 @@ namespace MonoTouch.SlideMenu.Demo
 				slideMenuViewController.WidthOfLandscapeContentViewVisible = 556f;
 			}
 
-			UINavigationController cont = new UINavigationController (slideMenuViewController);
+
 			window.RootViewController = cont;
 
 			window.BackgroundColor = UIColor.White;
