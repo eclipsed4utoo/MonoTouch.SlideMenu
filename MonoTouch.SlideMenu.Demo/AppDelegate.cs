@@ -23,6 +23,7 @@ namespace MonoTouch.SlideMenu.Demo
 			slideMenuViewController.SupportContentViewNavigation = true;
 			slideMenuViewController.SetContentViewController (detailsViewController);
 
+
 			slideMenuViewController.SetLeftMenuViewController (menuViewController);
 			slideMenuViewController.SetLeftBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
 			slideMenuViewController.SetRightBarButtonForController (new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks));
@@ -31,7 +32,6 @@ namespace MonoTouch.SlideMenu.Demo
 				slideMenuViewController.WidthOfPortraitContentViewVisible = 300f;
 				slideMenuViewController.WidthOfLandscapeContentViewVisible = 556f;
 			}
-
 
 			window.RootViewController = cont;
 

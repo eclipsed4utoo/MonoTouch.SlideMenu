@@ -14,12 +14,7 @@ namespace MonoTouch.SlideMenu
 
 		public override void WillShowViewController (UINavigationController navigationController, UIViewController viewController, bool animated)
 		{
-			if (navigationController.ViewControllers.Length > 1) {
-				slideMenuController.AddBackButton ();
-			}
-			else {
-				slideMenuController.RemoveBackButton ();
-			}
+
 		}
 	}
 }
