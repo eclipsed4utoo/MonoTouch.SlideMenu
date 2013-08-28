@@ -30,7 +30,7 @@ namespace MonoTouch.SlideMenu
 		bool isOpeningLeftMenu = false;
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
-		bool _panEnabledWhenSlideMenuIsHidden;
+		bool _panEnabledWhenSlideMenuIsHidden = true;
 
 		public UIViewController RightMenuViewController
 		{

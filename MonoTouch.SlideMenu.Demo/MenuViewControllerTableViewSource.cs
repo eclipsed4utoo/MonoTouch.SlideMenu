@@ -72,8 +72,6 @@ namespace MonoTouch.SlideMenu.Demo
 		{
 			var smc = controller.SlideMenuController ();
 			if (smc != null) {
-				var menuViewController = new MenuViewController (UITableViewStyle.Grouped);
-				smc.SetRightMenuViewController (menuViewController);
 				smc.ToggleRightMenuAnimated ();
 			}
 
