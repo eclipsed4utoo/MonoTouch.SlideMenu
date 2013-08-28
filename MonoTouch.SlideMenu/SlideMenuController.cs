@@ -234,7 +234,10 @@ namespace MonoTouch.SlideMenu
 		{
 			base.ViewDidAppear (animated);
 
-			contentViewController.EndAppearanceTransition();
+			if (contentViewController != null) {
+				contentViewController.EndAppearanceTransition();
+			}
+
 			if (leftMenuViewController != null && leftMenuViewController.IsViewLoaded && leftMenuViewController.View.Superview != null) {
 				leftMenuViewController.EndAppearanceTransition();
 			}
@@ -386,14 +389,6 @@ namespace MonoTouch.SlideMenu
 
 			LoadLeftMenuViewControllerViewIfNeeded ();
 			LoadRightMenuViewControllerViewIfNeeded ();
-
-			if (IsLeftMenuOpen () || IsRightMenuOpen()) {
-				RectangleF frame = contentViewController.View.Frame;
-				frame.X = OffsetXWhenMenuIsOpen();
-				UIView.Animate(duration, () => {
-					contentViewController.View.Frame = frame;
-				});
-			}
 		}
 
 		// #pragma mark - Menu view lazy load
@@ -504,6 +499,9 @@ namespace MonoTouch.SlideMenu
 			if (isRightMenuOpen) {
 				rightMenuViewController.BeginAppearanceTransition (false, animated);
 			}
+
+			if (rightMenuViewController != null)
+				this.View.SendSubviewToBack (rightMenuViewController.View);
 
 			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentView.Frame = contentViewFrame;
@@ -661,6 +659,10 @@ namespace MonoTouch.SlideMenu
 			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentView.Frame = contentViewFrame;
 			}, (finished) => {
+
+				if (rightMenuViewController != null)
+					this.View.BringSubviewToFront (rightMenuViewController.View);
+
 				rightMenuViewController.EndAppearanceTransition ();
 
 				TapGesture.Enabled = true;
@@ -932,6 +934,9 @@ namespace MonoTouch.SlideMenu
 			}
 
 			rightMenuViewController.BeginAppearanceTransition(false, true);
+
+			if (rightMenuViewController != null)
+				this.View.SendSubviewToBack (rightMenuViewController.View);
 
 			UIView.AnimateNotify(animationDuration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentViewController.View.Frame = frame;
