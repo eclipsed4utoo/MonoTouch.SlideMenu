@@ -13,9 +13,6 @@ namespace MonoTouch.SlideMenu.Demo
 	partial class DetailsViewController
 	{
 		[Outlet]
-		MonoTouch.UIKit.UIButton ResetNavButton { get; set; }
-
-		[Outlet]
 		MonoTouch.UIKit.UITextView SampleTextView { get; set; }
 
 		[Outlet]
@@ -23,19 +20,14 @@ namespace MonoTouch.SlideMenu.Demo
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (ResetNavButton != null) {
-				ResetNavButton.Dispose ();
-				ResetNavButton = null;
+			if (SampleTextView != null) {
+				SampleTextView.Dispose ();
+				SampleTextView = null;
 			}
 
 			if (ShowMenuButton != null) {
 				ShowMenuButton.Dispose ();
 				ShowMenuButton = null;
-			}
-
-			if (SampleTextView != null) {
-				SampleTextView.Dispose ();
-				SampleTextView = null;
 			}
 		}
 	}

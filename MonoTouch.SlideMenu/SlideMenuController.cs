@@ -13,7 +13,6 @@ namespace MonoTouch.SlideMenu
 	{
 		private float _widthOfPortraitContentViewVisible = 44.0f;
 		private float _widthOfLandscapeContentViewVisible = 44.0f;
-		private bool _supportContentViewNavigation = false;
 
 		const float ANIMATION_DURATION = 0.3f;
 

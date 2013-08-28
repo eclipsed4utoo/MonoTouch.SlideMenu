@@ -16,7 +16,6 @@ namespace MonoTouch.SlideMenu.Demo
 			base.DidReceiveMemoryWarning ();
 		}
 
-		int clicks = 0;
 		public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
@@ -34,19 +33,28 @@ namespace MonoTouch.SlideMenu.Demo
 			ShowMenuButton.TouchUpInside += (object sender, EventArgs e) => {
 				var slideMenuController = this.SlideMenuController();
 				if (slideMenuController != null) {
-//					slideMenuController.ShowLeftMenuAnimated(true, null);
-					clicks++;
-					SampleTextView.Text += " " + clicks;
-					slideMenuController.PushContentViewController(new DetailsViewController(), true);
+					slideMenuController.ToggleLeftMenuAnimated();
 				}
 			};
 
-			ResetNavButton.TouchUpInside += (object sender, EventArgs e) => {
-				var slideMenuController = this.SlideMenuController();
-				if (slideMenuController != null) {
-					slideMenuController.SetContentViewControllerAnimated(new UINavigationController(new DetailsViewController()), true, null);
-				}
-			};
+			this.NavigationItem.LeftBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks, LeftBarButtonClicked);
+			this.NavigationItem.RightBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks, RightBarButtonClicked);
+		}
+
+		private void RightBarButtonClicked(object sender, EventArgs e)
+		{
+			var slideMenuController = this.SlideMenuController ();
+			if (slideMenuController != null) {
+				slideMenuController.ToggleRightMenuAnimated ();
+			}
+		}
+
+		private void LeftBarButtonClicked(object sender, EventArgs e)
+		{
+			var slideMenuController = this.SlideMenuController ();
+			if (slideMenuController != null) {
+				slideMenuController.ToggleLeftMenuAnimated ();
+			}
 		}
 
 		[Obsolete]

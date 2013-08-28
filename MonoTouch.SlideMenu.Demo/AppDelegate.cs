@@ -16,21 +16,19 @@ namespace MonoTouch.SlideMenu.Demo
 
 			MenuViewController menuViewController = new MenuViewController(UITableViewStyle.Grouped);
 			DetailsViewController detailsViewController = new DetailsViewController();
-			
+			UINavigationController navController = new UINavigationController (detailsViewController);
 
 			SlideMenuController slideMenuViewController = new SlideMenuController();
-			UINavigationController cont = new UINavigationController (slideMenuViewController);
-			slideMenuViewController.SetContentViewController (detailsViewController);
-
-
+			slideMenuViewController.SetContentViewController (navController);
 			slideMenuViewController.SetLeftMenuViewController (menuViewController);
+			slideMenuViewController.SetRightMenuViewController (new MenuViewController (UITableViewStyle.Plain));
 
 			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad) {
 				slideMenuViewController.WidthOfPortraitContentViewVisible = 300f;
 				slideMenuViewController.WidthOfLandscapeContentViewVisible = 556f;
 			}
 
-			window.RootViewController = cont;
+			window.RootViewController = slideMenuViewController;
 
 			window.BackgroundColor = UIColor.White;
 			window.MakeKeyAndVisible ();			

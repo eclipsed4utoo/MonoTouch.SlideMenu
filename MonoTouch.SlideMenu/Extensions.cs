@@ -25,27 +25,6 @@ namespace MonoTouch.SlideMenu
 
 			return slideMenuController;
 		}
-
-		public static UINavigationController ParentNavController(this UIViewController controller)
-		{
-			UINavigationController navController = null;
-			UIViewController parentViewController = controller.ParentViewController;
-
-			if (controller is UINavigationController) {
-				navController = controller as UINavigationController;
-			}
-
-			while (navController == null && parentViewController != null)
-			{
-				if (parentViewController is UINavigationController) {
-					navController = parentViewController as UINavigationController;
-				} else {
-					parentViewController = parentViewController.ParentViewController;
-				}
-			}
-
-			return navController;
-		}
 	}
 }
 
