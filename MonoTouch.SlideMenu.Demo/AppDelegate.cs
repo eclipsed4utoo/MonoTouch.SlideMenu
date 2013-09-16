@@ -21,7 +21,10 @@ namespace MonoTouch.SlideMenu.Demo
 			SlideMenuController slideMenuViewController = new SlideMenuController();
 			slideMenuViewController.SetContentViewController (navController);
 			slideMenuViewController.SetLeftMenuViewController (menuViewController);
-			slideMenuViewController.SetRightMenuViewController (new MenuViewController (UITableViewStyle.Plain));
+
+			UINavigationController cont = new UINavigationController (new MenuViewController (UITableViewStyle.Plain));
+
+			slideMenuViewController.SetRightMenuViewController (cont);
 
 			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad) {
 				slideMenuViewController.WidthOfPortraitContentViewVisible = 300f;
