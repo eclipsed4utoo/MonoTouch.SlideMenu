@@ -188,8 +188,8 @@ namespace MonoTouch.SlideMenu
 			layer.MasksToBounds = false;
 			layer.ShadowColor = UIColor.Black.CGColor;
 			layer.ShadowOpacity = 1.0f;
-			layer.ShadowOffset = new SizeF(-2.5f, 0.0f);
-			layer.ShadowRadius = 5.0f;
+			layer.ShadowOffset = new SizeF(0f, 0.0f);
+			layer.ShadowRadius = 10.0f;
 			layer.ShadowPath = UIBezierPath.FromRect(contentView.Bounds).CGPath;
 		}
 
@@ -389,6 +389,13 @@ namespace MonoTouch.SlideMenu
 
 			LoadLeftMenuViewControllerViewIfNeeded ();
 			LoadRightMenuViewControllerViewIfNeeded ();
+		}
+
+		public override void DidRotate (UIInterfaceOrientation fromInterfaceOrientation)
+		{
+			base.DidRotate (fromInterfaceOrientation);
+
+			SetShadowOnContentViewControllerView ();
 		}
 
 		// #pragma mark - Menu view lazy load
@@ -659,9 +666,6 @@ namespace MonoTouch.SlideMenu
 			UIView.AnimateNotify(duration, 0, UIViewAnimationOptions.CurveEaseInOut, () => {
 				contentView.Frame = contentViewFrame;
 			}, (finished) => {
-
-				if (rightMenuViewController != null)
-					this.View.BringSubviewToFront (rightMenuViewController.View);
 
 				rightMenuViewController.EndAppearanceTransition ();
 
