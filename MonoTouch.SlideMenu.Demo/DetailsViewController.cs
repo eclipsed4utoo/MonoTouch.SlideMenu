@@ -15,27 +15,46 @@ namespace MonoTouch.SlideMenu.Demo
 		{
 			base.DidReceiveMemoryWarning ();
 		}
-		
+
 		public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
 
-			if (this.SlideMenuController() != null)
-			{
-				var menuButton = new UIBarButtonItem(UIBarButtonSystemItem.Rewind, this, null);
-				menuButton.Clicked += delegate (object sender, EventArgs e) {
-					this.SlideMenuController ().ToggleLeftMenuAnimated ();
-				};
-
-				NavigationItem.LeftBarButtonItem = menuButton;
-			}
+//			if (this.SlideMenuController() != null)
+//			{
+//				var menuButton = new UIBarButtonItem(UIBarButtonSystemItem.Rewind, this, null);
+//				menuButton.Clicked += delegate (object sender, EventArgs e) {
+//					this.SlideMenuController ().ToggleLeftMenuAnimated ();
+//				};
+//
+//				NavigationItem.LeftBarButtonItem = menuButton;
+//			}
 
 			ShowMenuButton.TouchUpInside += (object sender, EventArgs e) => {
 				var slideMenuController = this.SlideMenuController();
 				if (slideMenuController != null) {
-					slideMenuController.ShowLeftMenuAnimated(true, null);
+					slideMenuController.ToggleLeftMenuAnimated();
 				}
 			};
+
+			this.NavigationItem.LeftBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks, LeftBarButtonClicked);
+			this.NavigationItem.RightBarButtonItem = new UIBarButtonItem (UIBarButtonSystemItem.Bookmarks, RightBarButtonClicked);
+		}
+
+		private void RightBarButtonClicked(object sender, EventArgs e)
+		{
+			var slideMenuController = this.SlideMenuController ();
+			if (slideMenuController != null) {
+				slideMenuController.ToggleRightMenuAnimated ();
+			}
+		}
+
+		private void LeftBarButtonClicked(object sender, EventArgs e)
+		{
+			var slideMenuController = this.SlideMenuController ();
+			if (slideMenuController != null) {
+				slideMenuController.ToggleLeftMenuAnimated ();
+			}
 		}
 
 		[Obsolete]

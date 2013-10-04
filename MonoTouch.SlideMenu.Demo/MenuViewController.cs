@@ -24,6 +24,13 @@ namespace MonoTouch.SlideMenu.Demo
 		public override void ViewWillAppear (bool animated)
 		{
 			base.ViewWillAppear (animated);
+
+			if (this.NavigationController != null)
+			{
+				this.NavigationController.SetNavigationBarHidden (true, false);
+				this.NavigationController.SetToolbarHidden (false, false);
+			}
+
 			TableView.ScrollToNearestSelected(UITableViewScrollPosition.None, animated);
 		}
 
