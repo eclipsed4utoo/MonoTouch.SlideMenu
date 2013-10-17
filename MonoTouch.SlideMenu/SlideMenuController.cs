@@ -28,9 +28,15 @@ namespace MonoTouch.SlideMenu
 		bool shouldResizeRightMenuView = false;
 
 		bool isOpeningLeftMenu = false;
+		bool isOpeningRightMenu = false;
 
 		// When the menu is hidden, does the pan gesture trigger ? Default is true.
 		bool _panEnabledWhenSlideMenuIsHidden = true;
+
+		public bool IsRightMenuOpening
+		{
+			get { return isOpeningRightMenu; }
+		}
 
 		public UIViewController RightMenuViewController
 		{
@@ -654,6 +660,8 @@ namespace MonoTouch.SlideMenu
 			if (rightMenuViewController == null)
 				return;
 
+			isOpeningRightMenu = true;
+
 			var duration = animated ? ANIMATION_DURATION : 0;
 
 			UIView contentView = contentViewController.View;
@@ -675,6 +683,8 @@ namespace MonoTouch.SlideMenu
 				if (completion != null) {
 					completion (finished);
 				}
+
+				isOpeningRightMenu = false;
 			});
 		}
 
