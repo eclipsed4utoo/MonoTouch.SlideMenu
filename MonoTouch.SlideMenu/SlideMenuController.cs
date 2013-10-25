@@ -37,6 +37,11 @@ namespace MonoTouch.SlideMenu
 		{
 			get { return isOpeningRightMenu; }
 		}
+		
+		public bool IsLeftMenuOpening
+		{
+			get { return isOpeningLeftMenu; }
+		}
 
 		public UIViewController RightMenuViewController
 		{
@@ -571,14 +576,10 @@ namespace MonoTouch.SlideMenu
 				});
 			} else {
 
-				isOpeningLeftMenu = true;
-
 				if (rightMenuViewController != null)
 					rightMenuViewController.View.Hidden = true;
 
 				ShowLeftMenuAnimated (true, null);
-
-				isOpeningLeftMenu = false;
 			}
 		}
 
@@ -628,6 +629,8 @@ namespace MonoTouch.SlideMenu
 		{
 			if (leftMenuViewController == null)
 				return;
+			
+			isOpeningLeftMenu = true;
 
 			var duration = animated ? ANIMATION_DURATION : 0;
 
@@ -652,6 +655,8 @@ namespace MonoTouch.SlideMenu
 				if (completion != null) {
 					completion (finished);
 				}
+				
+				isOpeningLeftMenu = false;
 			});
 		}
 
