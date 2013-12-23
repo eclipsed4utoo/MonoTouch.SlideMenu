@@ -204,6 +204,14 @@ namespace MonoTouch.SlideMenu
 			layer.ShadowPath = UIBezierPath.FromRect(contentView.Bounds).CGPath;
 		}
 
+		public void ClearShadowOnContentViewControllerView ()
+		{
+			UIView contentView = contentViewController.View;
+			CALayer layer = contentView.Layer;
+			layer.MasksToBounds = false;
+			layer.ShadowColor = UIColor.Clear.CGColor;
+		}
+
 		// #pragma mark - View lifecycle
 
 		// - (void)viewDidLoad
@@ -390,6 +398,8 @@ namespace MonoTouch.SlideMenu
 		// - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 		public override void WillAnimateRotation (UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
+			ClearShadowOnContentViewControllerView ();
+
 			if (leftMenuViewController != null) {
 				shouldResizeLeftMenuView = true;
 			}
